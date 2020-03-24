@@ -1,5 +1,8 @@
 # palette
 
+[![pub package](https://img.shields.io/pub/v/palette.svg)](https://pub.dartlang.org/packages/palette)
+[![style: effective dart](https://img.shields.io/badge/style-effective_dart-40c4ff.svg)](https://github.com/tenhobi/effective_dart)
+
 A package for creating, generating, and interfacing with color palettes.
 
 palette is built on top of the [color_models](https://pub.dartlang.org/packages/color_models)
