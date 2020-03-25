@@ -624,7 +624,7 @@ class ColorPalette {
   ///
   /// [hueVariability], [saturationVariability], and [brightnessVariability],
   /// if `> 0`, add a degree of randomness to the selected color's hue,
-  /// saturation, and perceived brightness values, respectively.
+  /// saturation, and brightness (HSV's value) values, respectively.
   ///
   /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360 / numberOfColors`,
   /// and must not be `null`.
@@ -659,13 +659,10 @@ class ColorPalette {
       numberOfColors -= 1;
     }
 
-    final hspColor = color.toHspColor();
-
-    for (var i = 0; i < numberOfColors; i++) {
+    for (var i = 1; i <= numberOfColors; i++) {
       colors.add(_generateColor(
-        color.runtimeType,
-        hspColor,
-        (i % 2 == 0 ? distance * -1 : distance) * i,
+        color,
+        (i % 2 == 0 ? distance * -1 : distance) * ((i / 2).ceil()),
         hueVariability,
         saturationVariability,
         brightnessVariability,
@@ -683,7 +680,7 @@ class ColorPalette {
   ///
   /// [hueVariability], [saturationVariability], and [brightnessVariability],
   /// if `> 0`, add a degree of randomness to the selected color's hue,
-  /// saturation, and perceived brightness values, respectively.
+  /// saturation, and brightness (HSV's value) values, respectively.
   ///
   /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360 / numberOfColors`,
   /// and must not be `null`.
@@ -713,12 +710,9 @@ class ColorPalette {
 
     final distance = 360 / numberOfColors;
 
-    final hspColor = color.toHspColor();
-
     for (var i = 1; i < numberOfColors; i++) {
       colors.add(_generateColor(
-        color.runtimeType,
-        hspColor,
+        color,
         distance * i,
         hueVariability,
         saturationVariability,
@@ -843,7 +837,7 @@ class ColorPalette {
   ///
   /// [hueVariability], [saturationVariability], and [brightnessVariability],
   /// if `> 0`, add a degree of randomness to the selected color's hue,
-  /// saturation, and perceived brightness values, respectively.
+  /// saturation, and brightness (HSV's value) values, respectively.
   ///
   /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360 / numberOfColors`,
   /// and must not be `null`.
@@ -879,12 +873,9 @@ class ColorPalette {
       numberOfColors -= 1;
     }
 
-    final hspColor = oppositeColor.toHspColor();
-
     for (var i = 1; i < numberOfColors; i++) {
       colors.add(_generateColor(
-        color.runtimeType,
-        hspColor,
+        color,
         (i % 2 == 0 ? distance * -1 : distance) * i,
         hueVariability,
         saturationVariability,
@@ -925,8 +916,7 @@ class ColorPalette {
 
   /// Generates a new color in the color space defined by [colorModel].
   static ColorModel _generateColor(
-    Type colorModel,
-    HspColor color,
+    ColorModel color,
     num distance,
     num hueVariability,
     num saturationVariability,
@@ -942,27 +932,29 @@ class ColorPalette {
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
 
-    final hsp = color.toListWithAlpha();
+    // TODO: Only use HSV if [brightnessVariability] is > 0, otherwise use HSL
 
-    hsp[0] += distance;
+    final hsv = color.toHsvColor().toListWithAlpha();
+
+    hsv[0] += distance;
 
     if (hueVariability > 0) {
-      hsp[0] += _calculateVariability(hueVariability);
+      hsv[0] += _calculateVariability(hueVariability);
     }
 
-    hsp[0] %= 360;
+    hsv[0] %= 360;
 
     if (saturationVariability > 0) {
-      hsp[1] =
-          (hsp[1] + _calculateVariability(saturationVariability)).clamp(0, 100);
+      hsv[1] =
+          (hsv[1] + _calculateVariability(saturationVariability)).clamp(0, 100);
     }
 
     if (brightnessVariability > 0) {
-      hsp[2] =
-          (hsp[2] + _calculateVariability(brightnessVariability)).clamp(0, 100);
+      hsv[2] =
+          (hsv[2] + _calculateVariability(brightnessVariability)).clamp(0, 100);
     }
 
-    return _castToType(colorModel, HspColor.fromList(hsp));
+    return _castToType(color.runtimeType, HsvColor.fromList(hsv));
   }
 
   /// Generates a random color in the color space defined by [colorSpace].
@@ -1044,8 +1036,8 @@ class ColorPalette {
     return (Random().nextDouble() * value) - (value / 2);
   }
 
-  /// Casts [hspColor] to the color space defined by [colorModel].
-  static ColorModel _castToType(Type colorModel, HspColor hspColor) {
+  /// Casts [color] to the color space defined by [colorModel].
+  static ColorModel _castToType(Type colorModel, ColorModel color) {
     assert(colorModel != null &&
         (colorModel == CmykColor ||
             colorModel == HsiColor ||
@@ -1055,34 +1047,32 @@ class ColorPalette {
             colorModel == LabColor ||
             colorModel == RgbColor ||
             colorModel == XyzColor));
-    assert(hspColor != null);
-
-    ColorModel color;
+    assert(color != null);
 
     switch (colorModel) {
       case CmykColor:
-        color = hspColor.toCmykColor();
+        color = color.toCmykColor();
         break;
       case HsiColor:
-        color = hspColor.toHsiColor();
+        color = color.toHsiColor();
         break;
       case HslColor:
-        color = hspColor.toHslColor();
+        color = color.toHslColor();
         break;
       case HspColor:
-        color = hspColor;
+        color = color.toHspColor();
         break;
       case HsvColor:
-        color = hspColor.toHsvColor();
+        color = color;
         break;
       case LabColor:
-        color = hspColor.toLabColor();
+        color = color.toLabColor();
         break;
       case RgbColor:
-        color = hspColor.toRgbColor();
+        color = color.toRgbColor();
         break;
       case XyzColor:
-        color = hspColor.toXyzColor();
+        color = color.toXyzColor();
         break;
     }
 
