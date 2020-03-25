@@ -626,7 +626,7 @@ class ColorPalette {
   /// if `> 0`, add a degree of randomness to the selected color's hue,
   /// saturation, and brightness (HSV's value) values, respectively.
   ///
-  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360 / numberOfColors`,
+  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
   /// and must not be `null`.
   ///
   /// [saturationVariability] and [brightnessVariability] both default to `0`,
@@ -644,7 +644,7 @@ class ColorPalette {
     assert(numberOfColors != null && numberOfColors > 0);
     assert(hueVariability != null &&
         hueVariability >= 0 &&
-        hueVariability <= 360 / numberOfColors);
+        hueVariability <= 360);
     assert(saturationVariability != null &&
         saturationVariability >= 0 &&
         saturationVariability <= 100);
@@ -682,7 +682,7 @@ class ColorPalette {
   /// if `> 0`, add a degree of randomness to the selected color's hue,
   /// saturation, and brightness (HSV's value) values, respectively.
   ///
-  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360 / numberOfColors`,
+  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
   /// and must not be `null`.
   ///
   /// [saturationVariability] and [brightnessVariability] both default to `0`,
@@ -698,7 +698,7 @@ class ColorPalette {
     assert(numberOfColors != null && numberOfColors > 0);
     assert(hueVariability != null &&
         hueVariability >= 0 &&
-        hueVariability <= 360 / numberOfColors);
+        hueVariability <= 360);
     assert(saturationVariability != null &&
         saturationVariability >= 0 &&
         saturationVariability <= 100);
@@ -708,7 +708,7 @@ class ColorPalette {
 
     final colors = <ColorModel>[color];
 
-    final distance = 360 / numberOfColors;
+    final distance = 360;
 
     for (var i = 1; i < numberOfColors; i++) {
       colors.add(_generateColor(
@@ -877,7 +877,7 @@ class ColorPalette {
   /// if `> 0`, add a degree of randomness to the selected color's hue,
   /// saturation, and brightness (HSV's value) values, respectively.
   ///
-  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360 / numberOfColors`,
+  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
   /// and must not be `null`.
   ///
   /// [saturationVariability] and [brightnessVariability] both default to `0`,
@@ -894,7 +894,7 @@ class ColorPalette {
     assert(numberOfColors != null && numberOfColors > 0);
     assert(hueVariability != null &&
         hueVariability >= 0 &&
-        hueVariability <= 360 / numberOfColors);
+        hueVariability <= 360);
     assert(saturationVariability != null &&
         saturationVariability >= 0 &&
         saturationVariability <= 100);
