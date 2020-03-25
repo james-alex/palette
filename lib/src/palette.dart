@@ -784,6 +784,46 @@ class ColorPalette {
     assert(distributeHues != null);
     assert(colorSpace != null);
 
+    if (!distributeHues &&
+        (minHue == 0 && maxHue == 360) &&
+        (minSaturation == 0 && maxSaturation == 100) &&
+        (minBrightness == 0 && maxBrightness == 100)) {
+      final colors = List<ColorModel>.generate(numberOfColors, (_) {
+        ColorModel color;
+
+        switch (colorSpace) {
+          case ColorSpace.cmyk:
+            color = CmykColor.random();
+            break;
+          case ColorSpace.hsi:
+            color = HsiColor.random();
+            break;
+          case ColorSpace.hsl:
+            color = HslColor.random();
+            break;
+          case ColorSpace.hsp:
+            color = HspColor.random();
+            break;
+          case ColorSpace.hsv:
+            color = HsvColor.random();
+            break;
+          case ColorSpace.lab:
+            color = LabColor.random();
+            break;
+          case ColorSpace.rgb:
+            color = RgbColor.random();
+            break;
+          case ColorSpace.xyz:
+            color = XyzColor.random();
+            break;
+        }
+
+        return color;
+      });
+
+      return ColorPalette(colors);
+    }
+
     distributionVariability ??= (minHue - maxHue).abs() / numberOfColors / 4;
     final variabilityRadius = distributionVariability / 2;
 
@@ -803,12 +843,10 @@ class ColorPalette {
     var distance;
 
     for (var i = 1; i < numberOfColors; i++) {
-      if (distributeHues) {
-        distance ??= (minHue - maxHue) / numberOfColors;
-        hue += distance;
-        minHue = (hue - variabilityRadius) % 360;
-        maxHue = (hue + variabilityRadius) % 360;
-      }
+      distance ??= (minHue - maxHue) / numberOfColors;
+      hue += distance;
+      minHue = (hue - variabilityRadius) % 360;
+      maxHue = (hue + variabilityRadius) % 360;
 
       colors.add(_generateRandomColor(
         colorSpace,
