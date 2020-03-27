@@ -321,7 +321,7 @@ class ColorPalette {
     final distance1 = hue1 > hue2 ? hue1 - hue2 : hue2 - hue1;
     final distance2 = hue1 > hue2 ? (hue2 + 360) - hue1 : (hue1 + 360) - hue2;
 
-    return distance1 > distance2 ? distance1 : distance2;
+    return distance1 < distance2 ? distance1 : distance2;
   }
 
   /// Converts all [colors] into the [ColorModel] representing [colorSpace].
