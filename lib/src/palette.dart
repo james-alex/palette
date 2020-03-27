@@ -333,6 +333,10 @@ class ColorPalette {
   }
 
   /// Rotates the hue of every color in the palette by `180` degrees.
+  ///
+  /// __Note:__ Use the [ColorPalette.opposites] constructor to generate
+  /// a new palette that includes the colors in this palette and their
+  /// respective opposites.
   void opposite() {
     for (var i = 0; i < length; i++) {
       colors[i] = colors[i].opposite;
@@ -926,6 +930,10 @@ class ColorPalette {
   /// Generates a [ColorPalette] from [colorPalette] by appending or
   /// inserting the opposite colors of every color in [colorPalette].
   ///
+  /// __Note:__ Use the [opposite] methods to flip every color in a
+  /// palette to their respective opposites without preserving the
+  /// original colors.
+  ///
   /// [colorPalette] must not be `null`.
   ///
   /// If [insertOpposites] is `true`, the generated colors will be inserted
@@ -1060,7 +1068,7 @@ class ColorPalette {
   }
 
   /// Calculates a range from `0` with a radius of `value / 2`.
-  static double _calculateVariability(double value) {
+  static double _calculateVariability(num value) {
     assert(value != null && value > 0);
 
     return (Random().nextDouble() * value) - (value / 2);
