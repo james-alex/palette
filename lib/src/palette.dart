@@ -324,6 +324,40 @@ class ColorPalette {
     return distance1 > distance2 ? distance1 : distance2;
   }
 
+  /// Converts all [colors] into the [ColorModel] representing [colorSpace].
+  void toColorSpace(ColorSpace colorSpace) {
+    assert(colorSpace != null);
+
+    for (var i = 0; i < colors.length; i++) {
+      switch (colorSpace) {
+        case ColorSpace.cmyk:
+          colors[i] = colors[i].toCmykColor();
+          break;
+        case ColorSpace.hsi:
+          colors[i] = colors[i].toHsiColor();
+          break;
+        case ColorSpace.hsl:
+          colors[i] = colors[i].toHslColor();
+          break;
+        case ColorSpace.hsp:
+          colors[i] = colors[i].toHspColor();
+          break;
+        case ColorSpace.hsv:
+          colors[i] = colors[i].toHsvColor();
+          break;
+        case ColorSpace.lab:
+          colors[i] = colors[i].toLabColor();
+          break;
+        case ColorSpace.rgb:
+          colors[i] = colors[i].toRgbColor();
+          break;
+        case ColorSpace.xyz:
+          colors[i] = colors[i].toXyzColor();
+          break;
+      }
+    }
+  }
+
   /// Inverts the values of every color in the palette in their respective
   /// color spaces.
   void invert() {
