@@ -708,7 +708,7 @@ class ColorPalette {
 
     final colors = <ColorModel>[color];
 
-    final distance = 360;
+    final distance = 360 / numberOfColors;
 
     for (var i = 1; i < numberOfColors; i++) {
       colors.add(_generateColor(
@@ -824,7 +824,8 @@ class ColorPalette {
       return ColorPalette(colors);
     }
 
-    distributionVariability ??= (minHue - maxHue).abs() / numberOfColors / 4;
+    final distance = (minHue - maxHue) / numberOfColors;
+    distributionVariability ??= distance.abs() / 4;
     final variabilityRadius = distributionVariability / 2;
 
     final colors = <ColorModel>[
@@ -840,10 +841,8 @@ class ColorPalette {
     ];
 
     var hue = colors.first.hue;
-    var distance;
 
     for (var i = 1; i < numberOfColors; i++) {
-      distance ??= (minHue - maxHue) / numberOfColors;
       hue += distance;
       minHue = (hue - variabilityRadius) % 360;
       maxHue = (hue + variabilityRadius) % 360;
@@ -913,8 +912,8 @@ class ColorPalette {
 
     for (var i = 1; i < numberOfColors; i++) {
       colors.add(_generateColor(
-        color,
-        (i % 2 == 0 ? distance * -1 : distance) * i,
+        oppositeColor,
+        (i % 2 == 0 ? distance * -1 : distance) * ((i / 2).ceil()),
         hueVariability,
         saturationVariability,
         brightnessVariability,
@@ -970,8 +969,6 @@ class ColorPalette {
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
 
-    // TODO: Only use HSV if [brightnessVariability] is > 0, otherwise use HSL
-
     final hsv = color.toHsvColor().toListWithAlpha();
 
     hsv[0] += distance;
@@ -1021,50 +1018,45 @@ class ColorPalette {
         maxBrightness >= minBrightness &&
         maxBrightness <= 100);
 
-    final hspColor = HspColor.fromList(<num>[
-      _randomValue(minHue, maxHue) % 360,
-      _randomValue(minSaturation, maxSaturation),
-      _randomValue(minBrightness, maxBrightness),
-    ]);
+    final hsvColor = HsvColor.random(
+      minHue: minHue,
+      maxHue: maxHue,
+      minSaturation: minSaturation,
+      maxSaturation: maxSaturation,
+      minValue: minBrightness,
+      maxValue: maxBrightness,
+    );
 
     ColorModel color;
 
     switch (colorSpace) {
       case ColorSpace.cmyk:
-        color = hspColor.toCmykColor();
+        color = hsvColor.toCmykColor();
         break;
       case ColorSpace.hsi:
-        color = hspColor.toHsiColor();
+        color = hsvColor.toHsiColor();
         break;
       case ColorSpace.hsl:
-        color = hspColor.toHslColor();
+        color = hsvColor.toHslColor();
         break;
       case ColorSpace.hsp:
-        color = hspColor;
+        color = hsvColor;
         break;
       case ColorSpace.hsv:
-        color = hspColor.toHsvColor();
+        color = hsvColor.toHsvColor();
         break;
       case ColorSpace.lab:
-        color = hspColor.toLabColor();
+        color = hsvColor.toLabColor();
         break;
       case ColorSpace.rgb:
-        color = hspColor.toRgbColor();
+        color = hsvColor.toRgbColor();
         break;
       case ColorSpace.xyz:
-        color = hspColor.toXyzColor();
+        color = hsvColor.toXyzColor();
         break;
     }
 
     return color;
-  }
-
-  /// Generates a random value between [min] and [max].
-  static double _randomValue(num min, num max) {
-    assert(min != null && min >= 0);
-    assert(max != null && max >= 0);
-
-    return (Random().nextDouble() * (max - min)) + min;
   }
 
   /// Calculates a range from `0` with a radius of `value / 2`.
