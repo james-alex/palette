@@ -9,7 +9,7 @@ palette is built on top of the [color_models](https://pub.dartlang.org/packages/
 package, which exposes models for the CMYK, HSI, HSL, HSP, HSV, LAB, RGB, and XYZ
 color spaces.
 
-For use with Flutter, see: https://pub.dev/packages/flutter_palette
+__For use with Flutter, see:__ https://pub.dev/packages/flutter_palette
 
 # Usage
 
@@ -88,6 +88,29 @@ ColorPalette.splitComplimentary(
 /// Generates a color palette containing all of the colors contained
 /// in [colorPalette], as well as their opposite colors.
 ColorPalette.opposites(colorPalette);
+```
+
+## Colors
+
+The color palette can be viewed as a [List<ColorModel>] by referencing the
+[colors] getter.
+
+```dart
+// Construct a [ColorPalette] from a list of [RgbColor]s.
+final colorPalette = ColorPalette(<ColorModel>[
+  RgbColor(0, 0, 0), // Black
+  RgbColor(144, 144, 144), // Grey
+  RgbColor(255, 255, 255), // White
+  RgbColor(255, 0, 0), // Red
+  RgbColor(0, 255, 0), // Green
+  RgbColor(0, 0, 255), // Blue
+  RgbColor(255, 255, 0), // Yellow
+  RgbColor(0, 255, 255), // Cyan
+  RgbColor(255, 0, 255), // Pink
+]);
+
+// References the list [colorPalette] was constructed with.
+final colors = colorPalette.colors;
 ```
 
 ## Modifying Palettes
