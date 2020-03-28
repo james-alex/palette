@@ -1110,15 +1110,7 @@ class ColorPalette {
 
   /// Casts [color] to the color space defined by [colorModel].
   static ColorModel _castToType(Type colorModel, ColorModel color) {
-    assert(colorModel != null &&
-        (colorModel == CmykColor ||
-            colorModel == HsiColor ||
-            colorModel == HslColor ||
-            colorModel == HspColor ||
-            colorModel == HsvColor ||
-            colorModel == LabColor ||
-            colorModel == RgbColor ||
-            colorModel == XyzColor));
+    assert(colorModel != null);
     assert(color != null);
 
     switch (colorModel) {
