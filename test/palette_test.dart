@@ -6,12 +6,12 @@ const List<ColorModel> _testColors = <ColorModel>[
   RgbColor(0, 0, 0), // Black
   RgbColor(144, 144, 144), // Grey
   RgbColor(255, 255, 255), // White
-  RgbColor(255, 0, 0), // red
-  RgbColor(0, 255, 0), // green
-  RgbColor(0, 0, 255), // blue
-  RgbColor(255, 255, 0), // yellow
-  RgbColor(0, 255, 255), // cyan
-  RgbColor(255, 0, 255), // pink
+  RgbColor(255, 0, 0), // Red
+  RgbColor(0, 255, 0), // Green
+  RgbColor(0, 0, 255), // Blue
+  RgbColor(255, 255, 0), // Yellow
+  RgbColor(0, 255, 255), // Cyan
+  RgbColor(255, 0, 255), // Magenta
   RgbColor(240, 111, 12), // Hue 26°
   RgbColor(102, 204, 51), // Hue 101°
   RgbColor(51, 204, 153), // Hue 161°
@@ -58,7 +58,7 @@ void main() {
 
     test('Adjacent w/ Variability', () {
       for (var i = 3; i < _testColors.length; i++) {
-        final color = _testColors[i];
+        final color = _testColors[i].toHsvColor().toList();;
 
         for (var j = 1; j <= 288; j++) {
           for (var k = 0; k < _vm.length; k++) {
@@ -67,7 +67,7 @@ void main() {
             final sbVariability = (j % 2) * i * _vm[k];
 
             final colorPalette = ColorPalette.adjacent(
-              color,
+              _testColors[i],
               numberOfColors: j,
               distance: distance,
               hueVariability: hueVariability,
@@ -75,13 +75,11 @@ void main() {
               brightnessVariability: sbVariability,
             );
 
-            final colorValues = color.toHsvColor().toList();
-
             for (var l = 0; l < colorPalette.length; l++) {
               var index = l;
               if (colorPalette.length.isEven) index++;
 
-              final expectedHue = (colorValues[0] +
+              final expectedHue = (color[0] +
                       (((index / 2).ceil() * distance) *
                           (index % 2 == 0 ? -1 : 1))) %
                   360;
@@ -90,9 +88,9 @@ void main() {
 
               expect(_hueIsInRange(values[0], expectedHue, hueVariability),
                   equals(true));
-              expect(_isInRange(values[1], colorValues[1], sbVariability),
+              expect(_isInRange(values[1], color[1], sbVariability),
                   equals(true));
-              expect(_isInRange(values[2], colorValues[2], sbVariability),
+              expect(_isInRange(values[2], color[2], sbVariability),
                   equals(true));
             }
           }
