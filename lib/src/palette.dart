@@ -680,9 +680,8 @@ class ColorPalette {
     assert(color != null);
     assert(distance != null);
     assert(numberOfColors != null && numberOfColors > 0);
-    assert(hueVariability != null &&
-        hueVariability >= 0 &&
-        hueVariability <= 360);
+    assert(
+        hueVariability != null && hueVariability >= 0 && hueVariability <= 360);
     assert(saturationVariability != null &&
         saturationVariability >= 0 &&
         saturationVariability <= 100);
@@ -734,9 +733,8 @@ class ColorPalette {
   }) {
     assert(color != null);
     assert(numberOfColors != null && numberOfColors > 0);
-    assert(hueVariability != null &&
-        hueVariability >= 0 &&
-        hueVariability <= 360);
+    assert(
+        hueVariability != null && hueVariability >= 0 && hueVariability <= 360);
     assert(saturationVariability != null &&
         saturationVariability >= 0 &&
         saturationVariability <= 100);
@@ -929,9 +927,8 @@ class ColorPalette {
   }) {
     assert(color != null);
     assert(numberOfColors != null && numberOfColors > 0);
-    assert(hueVariability != null &&
-        hueVariability >= 0 &&
-        hueVariability <= 360);
+    assert(
+        hueVariability != null && hueVariability >= 0 && hueVariability <= 360);
     assert(saturationVariability != null &&
         saturationVariability >= 0 &&
         saturationVariability <= 100);
