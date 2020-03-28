@@ -1161,8 +1161,21 @@ class ColorPalette {
   void operator []=(int index, ColorModel value) => colors[index] = value;
 
   /// Returns the concatenation of this palette's colors and [other]s'.
-  ColorPalette operator +(ColorPalette other) =>
-      ColorPalette(colors + other.colors);
+  ///
+  /// [other] may be a [ColorPalette] or a [List<ColorModel>].
+  ColorPalette operator +(dynamic other) {
+    assert(other is ColorPalette || other is List<ColorModel>);
+
+    List<ColorModel> colors;
+
+    if (other is ColorPalette) {
+      colors = other.colors;
+    } else if (other is List<ColorModel>) {
+      colors = other;
+    }
+
+    return ColorPalette(this.colors + colors);
+  }
 
   @override
   String toString() => colors.toString();
