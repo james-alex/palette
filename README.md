@@ -31,12 +31,12 @@ ColorPalette(<ColorModel>[
   RgbColor(0, 0, 0), // Black
   RgbColor(144, 144, 144), // Grey
   RgbColor(255, 255, 255), // White
-  RgbColor(255, 0, 0), // red
-  RgbColor(0, 255, 0), // green
-  RgbColor(0, 0, 255), // blue
-  RgbColor(255, 255, 0), // yellow
-  RgbColor(0, 255, 255), // cyan
-  RgbColor(255, 0, 255), // pink
+  RgbColor(255, 0, 0), // Red
+  RgbColor(0, 255, 0), // Green
+  RgbColor(0, 0, 255), // Blue
+  RgbColor(255, 255, 0), // Yellow
+  RgbColor(0, 255, 255), // Cyan
+  RgbColor(255, 0, 255), // Pink
 ]);
 
 /// Create an empty color palette.
