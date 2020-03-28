@@ -36,7 +36,7 @@ ColorPalette(<ColorModel>[
   RgbColor(0, 0, 255), // Blue
   RgbColor(255, 255, 0), // Yellow
   RgbColor(0, 255, 255), // Cyan
-  RgbColor(255, 0, 255), // Pink
+  RgbColor(255, 0, 255), // Magenta
 ]);
 
 /// Create an empty color palette.
@@ -106,7 +106,7 @@ final colorPalette = ColorPalette(<ColorModel>[
   RgbColor(0, 0, 255), // Blue
   RgbColor(255, 255, 0), // Yellow
   RgbColor(0, 255, 255), // Cyan
-  RgbColor(255, 0, 255), // Pink
+  RgbColor(255, 0, 255), // Magenta
 ]);
 
 // References the list [colorPalette] was constructed with.
@@ -142,7 +142,7 @@ colorPalette.addAll(<ColorModel>[
   RgbColor(0, 0, 255), // blue
   RgbColor(255, 255, 0), // yellow
   RgbColor(0, 255, 255), // cyan
-  RgbColor(255, 0, 255), // pink
+  RgbColor(255, 0, 255), // Magenta
 ]);
 
 // [RgbColor(255, 255, 255), RgbColor(255, 0, 0)]
