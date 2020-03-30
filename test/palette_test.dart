@@ -791,24 +791,24 @@ void main() {
   });
 }
 
-/// Rounds [value] to the millionth.
-num _round(num value) => (value * 1000000).round() / 1000000;
+/// Rounds [value] to the thousandth.
+num _round(num value) => (value * 1000).round() / 1000;
 
 /// Returns `true` if [value] is in the range
-/// of `expectedValue +/- (variability / 2)`.
+/// of `expectedValue +/- variability`.
 bool _isInRange(num value, num expectedValue, num variability) {
   value = _round(value);
   expectedValue = _round(expectedValue);
 
-  if (value >= expectedValue - (variability / 2) &&
-      value <= expectedValue + (variability / 2)) {
+  if (value >= expectedValue - variability &&
+      value <= expectedValue + variability) {
     return true;
   }
 
   return false;
 }
 
-/// Returns `true` if [value] is int he range of
+/// Returns `true` if [value] is in the range of
 /// `expectedValue +/- (variability / 2)` in degrees.
 bool _hueIsInRange(num value, num expectedValue, num variability) {
   value = _round(value);
