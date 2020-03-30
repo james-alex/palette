@@ -3,14 +3,14 @@ description: >-
   A package for creating, generating, and interfacing with color palettes.
   With support for constructing colors in the CMYK, HSI, HSL, HSP, HSV, LAB,
   RGB, and XYZ color spaces.
-version: 0.1.0+1
+version: 0.1.0+2
 homepage: https://github.com/james-alex/palette
 
 environment:
   sdk: '>=2.1.0 <3.0.0'
 
 dependencies:
-  color_models: ^0.2.6+1
+  color_models: ^0.2.8
 
 dev_dependencies:
   test: ^1.6.0
