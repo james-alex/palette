@@ -1028,7 +1028,7 @@ class ColorPalette {
           (hsv[2] + _calculateVariability(brightnessVariability)).clamp(0, 100);
     }
 
-    return _castToType(color.runtimeType, HsvColor.fromList(hsv));
+    return _castToType(color, HsvColor.fromList(hsv));
   }
 
   /// Generates a random color in the color space defined by [colorSpace].
@@ -1106,35 +1106,26 @@ class ColorPalette {
   }
 
   /// Casts [color] to the color space defined by [colorModel].
-  static ColorModel _castToType(Type colorModel, ColorModel color) {
-    assert(colorModel != null);
+  static ColorModel _castToType(ColorModel type, ColorModel color) {
+    assert(type != null);
     assert(color != null);
 
-    switch (colorModel) {
-      case CmykColor:
-        color = color.toCmykColor();
-        break;
-      case HsiColor:
-        color = color.toHsiColor();
-        break;
-      case HslColor:
-        color = color.toHslColor();
-        break;
-      case HspColor:
-        color = color.toHspColor();
-        break;
-      case HsvColor:
-        color = color;
-        break;
-      case LabColor:
-        color = color.toLabColor();
-        break;
-      case RgbColor:
-        color = color.toRgbColor();
-        break;
-      case XyzColor:
-        color = color.toXyzColor();
-        break;
+    if (type is CmykColor) {
+      color = color.toCmykColor();
+    } else if (type is HsiColor) {
+      color = color.toHsiColor();
+    } else if (type is HslColor) {
+      color = color.toHslColor();
+    } else if (type is HspColor) {
+      color = color.toHspColor();
+    } else if (type is HsvColor) {
+      color = color;
+    } else if (type is LabColor) {
+      color = color.toLabColor();
+    } else if (type is RgbColor) {
+      color = color.toRgbColor();
+    } else if (type is XyzColor) {
+      color = color.toXyzColor();
     }
 
     return color;
