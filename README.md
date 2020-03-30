@@ -92,7 +92,7 @@ ColorPalette.opposites(colorPalette);
 
 ## Colors
 
-The color palette can be viewed as a [List<ColorModel>] by referencing the
+The color palette can be viewed as a [List&lt;ColorModel&gt;] by referencing the
 [colors] getter.
 
 ```dart
