@@ -735,6 +735,10 @@ class ColorPalette {
   /// If [perceivedBrightness] is `true`, colors will be generated in the
   /// HSP color space. If `false`, colors will be generated in the HSV
   /// color space.
+  ///
+  /// If [reverseOrder] is `false`, colors will be generated in a clockwise
+  /// order around the color wheel. If `true`, colors will be generated in a
+  /// counter-clockwise order. [reverseOrder] must not be `null`.
   factory ColorPalette.polyad(
     ColorModel color, {
     int numberOfColors = 5,
@@ -742,6 +746,7 @@ class ColorPalette {
     num saturationVariability = 0,
     num brightnessVariability = 0,
     bool perceivedBrightness = true,
+    bool reverseOrder = false,
   }) {
     assert(color != null);
     assert(numberOfColors != null && numberOfColors > 0);
@@ -754,10 +759,12 @@ class ColorPalette {
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
     assert(perceivedBrightness != null);
+    assert(reverseOrder != null);
 
     final colors = <ColorModel>[color];
 
-    final distance = 360 / numberOfColors;
+    var distance = 360 / numberOfColors;
+    if (reverseOrder) distance *= -1;
 
     for (var i = 1; i < numberOfColors; i++) {
       colors.add(_generateColor(
@@ -808,6 +815,11 @@ class ColorPalette {
   /// hues, if [distributeHues] is `true`. If `null`, [distributionVariability]
   /// defaults to `(minHue - maxHue).abs() / numberOfColors / 4`. To allow for
   /// no variability at all, [distributionVariability] must be set to `0`.
+  ///
+  /// If [reverseOrder] is `false`, colors will be generated in a clockwise
+  /// order around the color wheel. If `true`, colors will be generated in a
+  /// counter-clockwise order. [reverseOrder] will have no effect if
+  /// [distributeHues] is `false`. [reverseOrder] must not be `null`.
   factory ColorPalette.random(
     int numberOfColors, {
     ColorSpace colorSpace = ColorSpace.rgb,
@@ -820,6 +832,7 @@ class ColorPalette {
     bool perceivedBrightness = true,
     bool distributeHues = true,
     num distributionVariability,
+    bool reverseOrder = false,
   }) {
     assert(numberOfColors != null && numberOfColors > 0);
     assert(colorSpace != null);
@@ -839,6 +852,7 @@ class ColorPalette {
         maxBrightness <= 100);
     assert(perceivedBrightness != null);
     assert(distributeHues != null);
+    assert(reverseOrder != null);
 
     if (!distributeHues &&
         (minHue == 0 && maxHue == 360) &&
@@ -881,6 +895,7 @@ class ColorPalette {
     }
 
     var distance = (minHue - maxHue) / numberOfColors;
+    if (reverseOrder) distance *= -1;
 
     distributionVariability ??= distance.abs() / 4;
     final variabilityRadius = distributionVariability / 2;
