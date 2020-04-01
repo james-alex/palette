@@ -36,6 +36,7 @@ void main() {
               color,
               numberOfColors: j,
               distance: distance,
+              perceivedBrightness: false,
             );
 
             for (var l = 0; l < colorPalette.length; l++) {
@@ -73,6 +74,7 @@ void main() {
               hueVariability: hueVariability,
               saturationVariability: sbVariability,
               brightnessVariability: sbVariability,
+              perceivedBrightness: false,
             );
 
             for (var l = 0; l < colorPalette.length; l++) {
@@ -106,6 +108,7 @@ void main() {
           final colorPalette = ColorPalette.polyad(
             color,
             numberOfColors: i,
+            perceivedBrightness: false,
           );
 
           for (var k = 0; k < colorPalette.length; k++) {
@@ -135,6 +138,7 @@ void main() {
               hueVariability: hueVariability,
               saturationVariability: sbVariability,
               brightnessVariability: sbVariability,
+              perceivedBrightness: false,
             );
 
             final colorValues = color.toHsvColor().toList();
@@ -175,6 +179,7 @@ void main() {
             maxSaturation: maxSB,
             minBrightness: minSB,
             maxBrightness: maxSB,
+            perceivedBrightness: false,
           );
 
           final distance = (minHue - maxHue) / colorPalette.length;
@@ -212,6 +217,7 @@ void main() {
               color,
               numberOfColors: j,
               distance: distance,
+              perceivedBrightness: false,
             );
 
             for (var l = 1; l < colorPalette.length; l++) {
@@ -252,6 +258,7 @@ void main() {
               hueVariability: hueVariability,
               saturationVariability: sbVariability,
               brightnessVariability: sbVariability,
+              perceivedBrightness: false,
             );
 
             final colorValues = color.toHsvColor().toList();
@@ -320,6 +327,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         colorPalette.sortBy(ColorProperty.brightest);
@@ -346,6 +354,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         colorPalette.sortBy(ColorProperty.dimmest);
@@ -372,6 +381,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         colorPalette.sortBy(ColorProperty.lightest);
@@ -398,6 +408,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         colorPalette.sortBy(ColorProperty.darkest);
@@ -424,6 +435,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         colorPalette.sortBy(ColorProperty.mostIntense);
@@ -450,6 +462,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         colorPalette.sortBy(ColorProperty.leastIntense);
@@ -476,6 +489,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         colorPalette.sortBy(ColorProperty.deepest);
@@ -502,6 +516,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         colorPalette.sortBy(ColorProperty.dullest);
@@ -528,6 +543,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         colorPalette.sortBy(ColorProperty.richest);
@@ -556,6 +572,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         colorPalette.sortBy(ColorProperty.muted);
@@ -599,6 +616,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         for (var j = 0; j < colorProperties.length; j++) {
@@ -649,6 +667,7 @@ void main() {
           hueVariability: 360,
           saturationVariability: 100,
           brightnessVariability: 100,
+          perceivedBrightness: false,
         );
 
         final hues = colorPalette.colors.map((color) => color.hue).toList();
@@ -678,6 +697,7 @@ void main() {
             hueVariability: 360,
             saturationVariability: 100,
             brightnessVariability: 100,
+            perceivedBrightness: false,
           );
 
           final hues = colorPalette.colors.map((color) => color.hue).toList();
@@ -717,6 +737,7 @@ void main() {
             hueVariability: 360,
             saturationVariability: 100,
             brightnessVariability: 100,
+            perceivedBrightness: false,
           );
 
           final hues = colorPalette.colors.map((color) => color.hue).toList();
