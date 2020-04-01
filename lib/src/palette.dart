@@ -669,6 +669,10 @@ class ColorPalette {
   ///
   /// [saturationVariability] and [brightnessVariability] both default to `0`,
   /// must be `>= 0 && <= 100`, and must not be `null`.
+  ///
+  /// If [perceivedBrightness] is `true`, colors will be generated in the
+  /// HSP color space. If `false`, colors will be generated in the HSV
+  /// color space.
   factory ColorPalette.adjacent(
     ColorModel color, {
     int numberOfColors = 5,
@@ -676,6 +680,7 @@ class ColorPalette {
     num hueVariability = 0,
     num saturationVariability = 0,
     num brightnessVariability = 0,
+    bool perceivedBrightness = true,
   }) {
     assert(color != null);
     assert(distance != null);
@@ -688,6 +693,7 @@ class ColorPalette {
     assert(brightnessVariability != null &&
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
+    assert(perceivedBrightness != null);
 
     final colors = <ColorModel>[];
 
@@ -703,6 +709,7 @@ class ColorPalette {
         hueVariability,
         saturationVariability,
         brightnessVariability,
+        perceivedBrightness,
       ));
     }
 
@@ -717,19 +724,24 @@ class ColorPalette {
   ///
   /// [hueVariability], [saturationVariability], and [brightnessVariability],
   /// if `> 0`, add a degree of randomness to the selected color's hue,
-  /// saturation, and brightness (HSV's value) values, respectively.
+  /// saturation, and brightness values, respectively.
   ///
   /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
   /// and must not be `null`.
   ///
   /// [saturationVariability] and [brightnessVariability] both default to `0`,
   /// must be `>= 0 && <= 100`, and must not be `null`.
+  ///
+  /// If [perceivedBrightness] is `true`, colors will be generated in the
+  /// HSP color space. If `false`, colors will be generated in the HSV
+  /// color space.
   factory ColorPalette.polyad(
     ColorModel color, {
     int numberOfColors = 5,
     num hueVariability = 0,
     num saturationVariability = 0,
     num brightnessVariability = 0,
+    bool perceivedBrightness = true,
   }) {
     assert(color != null);
     assert(numberOfColors != null && numberOfColors > 0);
@@ -741,6 +753,7 @@ class ColorPalette {
     assert(brightnessVariability != null &&
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
+    assert(perceivedBrightness != null);
 
     final colors = <ColorModel>[color];
 
@@ -753,6 +766,7 @@ class ColorPalette {
         hueVariability,
         saturationVariability,
         brightnessVariability,
+        perceivedBrightness,
       ));
     }
 
@@ -761,6 +775,10 @@ class ColorPalette {
 
   /// Generates a [ColorPalette] with [numberOfColors] at random, constrained
   /// within the specified hue, saturation, and brightness ranges.
+  ///
+  /// [colorSpace] defines the color space colors will be generated and
+  /// returned in. [colorSpace] defaults to [ColorSpace.rgb] and must not
+  /// be `null`.
   ///
   /// [minHue] and [maxHue] are used to set the range of hues that will be
   /// selected from. If `minHue < maxHue`, the range will run in a clockwise
@@ -774,9 +792,13 @@ class ColorPalette {
   /// Both [minSaturation] and [maxSaturation] must be `>= 0 && <= 100`.
   ///
   /// [minBrightness] and [maxBrightness] are used to set the range of the
-  /// generated colors' percieved brightness values. [minBrightness] must be
+  /// generated colors' brightness values. [minBrightness] must be
   /// `<= maxBrightness` and [maxBrightness] must be `>= minBrightness`.
   /// Both [minBrightness] and [maxBrightness] must be `>= 0 && <= 100`.
+  ///
+  /// If [perceivedBrightness] is `true`, colors will be generated in the
+  /// HSP color space. If `false`, colors will be generated in the HSV
+  /// color space.
   ///
   /// If [distributeHues] is `true`, the generated colors will be spread
   /// evenly across the range of hues allowed for. [distributeHues] must
@@ -786,23 +808,21 @@ class ColorPalette {
   /// hues, if [distributeHues] is `true`. If `null`, [distributionVariability]
   /// defaults to `(minHue - maxHue).abs() / numberOfColors / 4`. To allow for
   /// no variability at all, [distributionVariability] must be set to `0`.
-  ///
-  /// [colorSpace] defines the color space colors will be generated and
-  /// returned in. [colorSpace] defaults to [ColorSpace.rgb] and must not
-  /// be `null`.
   factory ColorPalette.random(
     int numberOfColors, {
+    ColorSpace colorSpace = ColorSpace.rgb,
     num minHue = 0,
     num maxHue = 360,
     num minSaturation = 0,
     num maxSaturation = 100,
     num minBrightness = 0,
     num maxBrightness = 100,
+    bool perceivedBrightness = true,
     bool distributeHues = true,
     num distributionVariability,
-    ColorSpace colorSpace = ColorSpace.rgb,
   }) {
     assert(numberOfColors != null && numberOfColors > 0);
+    assert(colorSpace != null);
     assert(minHue != null && minHue >= 0 && minHue <= 360);
     assert(maxHue != null && maxHue >= 0 && maxHue <= 360);
     assert(minSaturation != null &&
@@ -817,8 +837,8 @@ class ColorPalette {
     assert(maxBrightness != null &&
         maxBrightness >= minBrightness &&
         maxBrightness <= 100);
+    assert(perceivedBrightness != null);
     assert(distributeHues != null);
-    assert(colorSpace != null);
 
     if (!distributeHues &&
         (minHue == 0 && maxHue == 360) &&
@@ -860,7 +880,8 @@ class ColorPalette {
       return ColorPalette(colors);
     }
 
-    final distance = (minHue - maxHue) / numberOfColors;
+    var distance = (minHue - maxHue) / numberOfColors;
+
     distributionVariability ??= distance.abs() / 4;
     final variabilityRadius = distributionVariability / 2;
 
@@ -873,6 +894,7 @@ class ColorPalette {
         maxSaturation,
         minBrightness,
         maxBrightness,
+        perceivedBrightness,
       ),
     ];
 
@@ -891,6 +913,7 @@ class ColorPalette {
         maxSaturation,
         minBrightness,
         maxBrightness,
+        perceivedBrightness,
       ));
     }
 
@@ -917,6 +940,10 @@ class ColorPalette {
   ///
   /// [saturationVariability] and [brightnessVariability] both default to `0`,
   /// must be `>= 0 && <= 100`, and must not be `null`.
+  ///
+  /// If [perceivedBrightness] is `true`, colors will be generated in the
+  /// HSP color space. If `false`, colors will be generated in the HSV
+  /// color space.
   factory ColorPalette.splitComplimentary(
     ColorModel color, {
     int numberOfColors = 3,
@@ -924,6 +951,7 @@ class ColorPalette {
     num hueVariability = 0,
     num saturationVariability = 0,
     num brightnessVariability = 0,
+    bool perceivedBrightness = true,
   }) {
     assert(color != null);
     assert(numberOfColors != null && numberOfColors > 0);
@@ -935,6 +963,7 @@ class ColorPalette {
     assert(brightnessVariability != null &&
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
+    assert(perceivedBrightness != null);
 
     final colors = <ColorModel>[color];
 
@@ -952,6 +981,7 @@ class ColorPalette {
         hueVariability,
         saturationVariability,
         brightnessVariability,
+        perceivedBrightness,
       ));
     }
 
@@ -997,6 +1027,7 @@ class ColorPalette {
     num hueVariability,
     num saturationVariability,
     num brightnessVariability,
+    bool perceivedBrightness,
   ) {
     assert(distance != null);
     assert(
@@ -1007,28 +1038,37 @@ class ColorPalette {
     assert(brightnessVariability != null &&
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
+    assert(perceivedBrightness != null);
 
-    final hsv = color.toHsvColor().toListWithAlpha();
+    final colorValues = perceivedBrightness
+        ? color.toHspColor().toListWithAlpha()
+        : color.toHsvColor().toListWithAlpha();
 
-    hsv[0] += distance;
+    colorValues[0] += distance;
 
     if (hueVariability > 0) {
-      hsv[0] += _calculateVariability(hueVariability);
+      colorValues[0] += _calculateVariability(hueVariability);
     }
 
-    hsv[0] %= 360;
+    colorValues[0] %= 360;
 
     if (saturationVariability > 0) {
-      hsv[1] =
-          (hsv[1] + _calculateVariability(saturationVariability)).clamp(0, 100);
+      colorValues[1] =
+          (colorValues[1] + _calculateVariability(saturationVariability))
+              .clamp(0, 100);
     }
 
     if (brightnessVariability > 0) {
-      hsv[2] =
-          (hsv[2] + _calculateVariability(brightnessVariability)).clamp(0, 100);
+      colorValues[2] =
+          (colorValues[2] + _calculateVariability(brightnessVariability))
+              .clamp(0, 100);
     }
 
-    return _castToType(color, HsvColor.fromList(hsv));
+    return _castToType(
+        color,
+        perceivedBrightness
+            ? HspColor.fromList(colorValues)
+            : HsvColor.fromList(colorValues));
   }
 
   /// Generates a random color in the color space defined by [colorSpace].
@@ -1040,6 +1080,7 @@ class ColorPalette {
     num maxSaturation,
     num minBrightness,
     num maxBrightness,
+    bool perceivedBrightness,
   ) {
     assert(colorSpace != null);
     assert(minHue != null && minHue >= 0 && minHue <= 360);
@@ -1056,42 +1097,52 @@ class ColorPalette {
     assert(maxBrightness != null &&
         maxBrightness >= minBrightness &&
         maxBrightness <= 100);
+    assert(perceivedBrightness != null);
 
-    final hsvColor = HsvColor.random(
-      minHue: minHue,
-      maxHue: maxHue,
-      minSaturation: minSaturation,
-      maxSaturation: maxSaturation,
-      minValue: minBrightness,
-      maxValue: maxBrightness,
-    );
+    final randomColor = perceivedBrightness
+        ? HspColor.random(
+            minHue: minHue,
+            maxHue: maxHue,
+            minSaturation: minSaturation,
+            maxSaturation: maxSaturation,
+            minPerceivedBrightness: minBrightness,
+            maxPerceivedBrightness: maxBrightness,
+          )
+        : HsvColor.random(
+            minHue: minHue,
+            maxHue: maxHue,
+            minSaturation: minSaturation,
+            maxSaturation: maxSaturation,
+            minValue: minBrightness,
+            maxValue: maxBrightness,
+          );
 
     ColorModel color;
 
     switch (colorSpace) {
       case ColorSpace.cmyk:
-        color = hsvColor.toCmykColor();
+        color = randomColor.toCmykColor();
         break;
       case ColorSpace.hsi:
-        color = hsvColor.toHsiColor();
+        color = randomColor.toHsiColor();
         break;
       case ColorSpace.hsl:
-        color = hsvColor.toHslColor();
+        color = randomColor.toHslColor();
         break;
       case ColorSpace.hsp:
-        color = hsvColor;
+        color = randomColor.toHspColor();
         break;
       case ColorSpace.hsv:
-        color = hsvColor.toHsvColor();
+        color = randomColor.toHsvColor();
         break;
       case ColorSpace.lab:
-        color = hsvColor.toLabColor();
+        color = randomColor.toLabColor();
         break;
       case ColorSpace.rgb:
-        color = hsvColor.toRgbColor();
+        color = randomColor.toRgbColor();
         break;
       case ColorSpace.xyz:
-        color = hsvColor.toXyzColor();
+        color = randomColor.toXyzColor();
         break;
     }
 
@@ -1119,7 +1170,7 @@ class ColorPalette {
     } else if (type is HspColor) {
       color = color.toHspColor();
     } else if (type is HsvColor) {
-      color = color;
+      color = color.toHsvColor();
     } else if (type is LabColor) {
       color = color.toLabColor();
     } else if (type is RgbColor) {
