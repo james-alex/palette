@@ -3,7 +3,7 @@ import 'package:color_models/color_models.dart';
 
 export 'package:color_models/color_models.dart';
 
-/// The color spaces by type: CMYK, HSI, HSL, HSP, HSV, LAB, RGB, and XYZ.
+/// The color spaces by type: CMYK, HSI, HSL, HSP, HSB, LAB, RGB, and XYZ.
 enum ColorSpace {
   /// Cyan, Magenta, Yellow, Black
   cmyk,
@@ -18,7 +18,7 @@ enum ColorSpace {
   hsp,
 
   /// Hue, Saturation, Value
-  hsv,
+  hsb,
 
   /// Lightness, A (green to red), B (blue to yellow)
   lab,
@@ -226,24 +226,26 @@ class ColorPalette {
   ColorModel get dullest => colors.reduce((color1, color2) =>
       color1.saturation < color2.saturation ? color1 : color2);
 
-  /// Returns the color with the highest combined saturation and value values.
+  /// Returns the color with the highest combined saturation
+  /// and brightness values.
   ColorModel get richest => colors.reduce((color1, color2) {
-        final hsv1 = color1.toHsvColor();
-        final hsv2 = color2.toHsvColor();
+        final hsb1 = color1.toHsbColor();
+        final hsb2 = color2.toHsbColor();
 
-        final value1 = hsv1.saturation + hsv1.value;
-        final value2 = hsv2.saturation + hsv2.value;
+        final value1 = hsb1.saturation + hsb1.brightness;
+        final value2 = hsb2.saturation + hsb2.brightness;
 
         return value1 < value2 ? color2 : color1;
       });
 
-  /// Returns the color with the lowest combined saturation and value values.
+  /// Returns the color with the lowest combined saturation
+  /// and brightness values.
   ColorModel get muted => colors.reduce((color1, color2) {
-        final hsv1 = color1.toHsvColor();
-        final hsv2 = color2.toHsvColor();
+        final hsb1 = color1.toHsbColor();
+        final hsb2 = color2.toHsbColor();
 
-        final value1 = hsv1.saturation + hsv1.value;
-        final value2 = hsv2.saturation + hsv2.value;
+        final value1 = hsb1.saturation + hsb1.brightness;
+        final value2 = hsb2.saturation + hsb2.brightness;
 
         return value1 < value2 ? color1 : color2;
       });
@@ -342,8 +344,8 @@ class ColorPalette {
         case ColorSpace.hsp:
           colors[i] = colors[i].toHspColor();
           break;
-        case ColorSpace.hsv:
-          colors[i] = colors[i].toHsvColor();
+        case ColorSpace.hsb:
+          colors[i] = colors[i].toHsbColor();
           break;
         case ColorSpace.lab:
           colors[i] = colors[i].toLabColor();
@@ -501,7 +503,7 @@ class ColorPalette {
   /// Sorts the palette by [property].
   ///
   /// [property] must not be `null`.
-  void sortBy(ColorProperty property) {
+  void sortBy(ColorSortingProperty property) {
     assert(property != null);
 
     colors.sort((a, b) {
@@ -510,54 +512,54 @@ class ColorPalette {
       var inverse = false;
 
       switch (property) {
-        case ColorProperty.brightest:
+        case ColorSortingProperty.brightest:
           value1 = a.toHspColor().perceivedBrightness;
           value2 = b.toHspColor().perceivedBrightness;
           inverse = true;
           break;
-        case ColorProperty.dimmest:
+        case ColorSortingProperty.dimmest:
           value1 = a.toHspColor().perceivedBrightness;
           value2 = b.toHspColor().perceivedBrightness;
           break;
-        case ColorProperty.lightest:
+        case ColorSortingProperty.lightest:
           value1 = a.toHslColor().lightness;
           value2 = b.toHslColor().lightness;
           inverse = true;
           break;
-        case ColorProperty.darkest:
+        case ColorSortingProperty.darkest:
           value1 = a.toHslColor().lightness;
           value2 = b.toHslColor().lightness;
           break;
-        case ColorProperty.mostIntense:
+        case ColorSortingProperty.mostIntense:
           value1 = a.toHsiColor().intensity;
           value2 = b.toHsiColor().intensity;
           inverse = true;
           break;
-        case ColorProperty.leastIntense:
+        case ColorSortingProperty.leastIntense:
           value1 = a.toHsiColor().intensity;
           value2 = b.toHsiColor().intensity;
           break;
-        case ColorProperty.deepest:
+        case ColorSortingProperty.deepest:
           value1 = a.saturation;
           value2 = b.saturation;
           inverse = true;
           break;
-        case ColorProperty.dullest:
+        case ColorSortingProperty.dullest:
           value1 = a.saturation;
           value2 = b.saturation;
           break;
         case ColorProperty.richest:
-          var color1 = a.toHsvColor();
-          var color2 = b.toHsvColor();
-          value1 = color1.saturation + color1.value;
-          value2 = color2.saturation + color2.value;
+          var color1 = a.toHsbColor();
+          var color2 = b.toHsbColor();
+          value1 = color1.saturation + color1.brightness;
+          value2 = color2.saturation + color2.brightness;
           inverse = true;
           break;
         case ColorProperty.muted:
-          var color1 = a.toHsvColor();
-          var color2 = b.toHsvColor();
-          value1 = color1.saturation + color1.value;
-          value2 = color2.saturation + color2.value;
+          var color1 = a.toHsbColor();
+          var color2 = b.toHsbColor();
+          value1 = color1.saturation + color1.brightness;
+          value2 = color2.saturation + color2.brightness;
           break;
         case ColorProperty.red:
           value1 = _calculateDistance(0, a.hue);
@@ -662,7 +664,7 @@ class ColorPalette {
   ///
   /// [hueVariability], [saturationVariability], and [brightnessVariability],
   /// if `> 0`, add a degree of randomness to the selected color's hue,
-  /// saturation, and brightness (HSV's value) values, respectively.
+  /// saturation, and brightness (HSB's value) values, respectively.
   ///
   /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
   /// and must not be `null`.
@@ -671,7 +673,7 @@ class ColorPalette {
   /// must be `>= 0 && <= 100`, and must not be `null`.
   ///
   /// If [perceivedBrightness] is `true`, colors will be generated in the
-  /// HSP color space. If `false`, colors will be generated in the HSV
+  /// HSP color space. If `false`, colors will be generated in the HSB
   /// color space.
   factory ColorPalette.adjacent(
     ColorModel color, {
@@ -733,7 +735,7 @@ class ColorPalette {
   /// must be `>= 0 && <= 100`, and must not be `null`.
   ///
   /// If [perceivedBrightness] is `true`, colors will be generated in the
-  /// HSP color space. If `false`, colors will be generated in the HSV
+  /// HSP color space. If `false`, colors will be generated in the HSB
   /// color space.
   ///
   /// If [clockwise] is `false`, colors will be generated in a clockwise
@@ -804,7 +806,7 @@ class ColorPalette {
   /// Both [minBrightness] and [maxBrightness] must be `>= 0 && <= 100`.
   ///
   /// If [perceivedBrightness] is `true`, colors will be generated in the
-  /// HSP color space. If `false`, colors will be generated in the HSV
+  /// HSP color space. If `false`, colors will be generated in the HSB
   /// color space.
   ///
   /// If [distributeHues] is `true`, the generated colors will be spread
@@ -874,8 +876,8 @@ class ColorPalette {
           case ColorSpace.hsp:
             color = HspColor.random();
             break;
-          case ColorSpace.hsv:
-            color = HsvColor.random();
+          case ColorSpace.hsb:
+            color = HsbColor.random();
             break;
           case ColorSpace.lab:
             color = LabColor.random();
@@ -948,7 +950,7 @@ class ColorPalette {
   ///
   /// [hueVariability], [saturationVariability], and [brightnessVariability],
   /// if `> 0`, add a degree of randomness to the selected color's hue,
-  /// saturation, and brightness (HSV's value) values, respectively.
+  /// saturation, and brightness (HSB's value) values, respectively.
   ///
   /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
   /// and must not be `null`.
@@ -957,7 +959,7 @@ class ColorPalette {
   /// must be `>= 0 && <= 100`, and must not be `null`.
   ///
   /// If [perceivedBrightness] is `true`, colors will be generated in the
-  /// HSP color space. If `false`, colors will be generated in the HSV
+  /// HSP color space. If `false`, colors will be generated in the HSB
   /// color space.
   factory ColorPalette.splitComplimentary(
     ColorModel color, {
@@ -1057,7 +1059,7 @@ class ColorPalette {
 
     final colorValues = perceivedBrightness
         ? color.toHspColor().toListWithAlpha()
-        : color.toHsvColor().toListWithAlpha();
+        : color.toHsbColor().toListWithAlpha();
 
     colorValues[0] += distance;
 
@@ -1083,7 +1085,7 @@ class ColorPalette {
         color,
         perceivedBrightness
             ? HspColor.fromList(colorValues)
-            : HsvColor.fromList(colorValues));
+            : HsbColor.fromList(colorValues));
   }
 
   /// Generates a random color in the color space defined by [colorSpace].
@@ -1123,13 +1125,13 @@ class ColorPalette {
             minPerceivedBrightness: minBrightness,
             maxPerceivedBrightness: maxBrightness,
           )
-        : HsvColor.random(
+        : HsbColor.random(
             minHue: minHue,
             maxHue: maxHue,
             minSaturation: minSaturation,
             maxSaturation: maxSaturation,
-            minValue: minBrightness,
-            maxValue: maxBrightness,
+            minBrightness: minBrightness,
+            maxBrightness: maxBrightness,
           );
 
     ColorModel color;
@@ -1147,8 +1149,8 @@ class ColorPalette {
       case ColorSpace.hsp:
         color = randomColor.toHspColor();
         break;
-      case ColorSpace.hsv:
-        color = randomColor.toHsvColor();
+      case ColorSpace.hsb:
+        color = randomColor.toHsbColor();
         break;
       case ColorSpace.lab:
         color = randomColor.toLabColor();
@@ -1184,8 +1186,8 @@ class ColorPalette {
       color = color.toHslColor();
     } else if (type is HspColor) {
       color = color.toHspColor();
-    } else if (type is HsvColor) {
-      color = color.toHsvColor();
+    } else if (type is HsbColor) {
+      color = color.toHsbColor();
     } else if (type is LabColor) {
       color = color.toLabColor();
     } else if (type is RgbColor) {
