@@ -330,7 +330,7 @@ void main() {
           perceivedBrightness: false,
         );
 
-        colorPalette.sortBy(ColorProperty.brightest);
+        colorPalette.sortBy(ColorSortingProperty.brightest);
 
         num lastBrightness;
 
@@ -357,7 +357,7 @@ void main() {
           perceivedBrightness: false,
         );
 
-        colorPalette.sortBy(ColorProperty.dimmest);
+        colorPalette.sortBy(ColorSortingProperty.dimmest);
 
         num lastBrightness;
 
@@ -384,7 +384,7 @@ void main() {
           perceivedBrightness: false,
         );
 
-        colorPalette.sortBy(ColorProperty.lightest);
+        colorPalette.sortBy(ColorSortingProperty.lightest);
 
         num lastLightness;
 
@@ -411,7 +411,7 @@ void main() {
           perceivedBrightness: false,
         );
 
-        colorPalette.sortBy(ColorProperty.darkest);
+        colorPalette.sortBy(ColorSortingProperty.darkest);
 
         num lastLightness;
 
@@ -438,7 +438,7 @@ void main() {
           perceivedBrightness: false,
         );
 
-        colorPalette.sortBy(ColorProperty.mostIntense);
+        colorPalette.sortBy(ColorSortingProperty.mostIntense);
 
         num lastIntensity;
 
@@ -465,7 +465,7 @@ void main() {
           perceivedBrightness: false,
         );
 
-        colorPalette.sortBy(ColorProperty.leastIntense);
+        colorPalette.sortBy(ColorSortingProperty.leastIntense);
 
         num lastIntensity;
 
@@ -492,7 +492,7 @@ void main() {
           perceivedBrightness: false,
         );
 
-        colorPalette.sortBy(ColorProperty.deepest);
+        colorPalette.sortBy(ColorSortingProperty.deepest);
 
         num lastSaturation;
 
@@ -519,7 +519,7 @@ void main() {
           perceivedBrightness: false,
         );
 
-        colorPalette.sortBy(ColorProperty.dullest);
+        colorPalette.sortBy(ColorSortingProperty.dullest);
 
         num lastSaturation;
 
@@ -546,7 +546,7 @@ void main() {
           perceivedBrightness: false,
         );
 
-        colorPalette.sortBy(ColorProperty.richest);
+        colorPalette.sortBy(ColorSortingProperty.richest);
 
         num lastValue;
 
@@ -575,7 +575,7 @@ void main() {
           perceivedBrightness: false,
         );
 
-        colorPalette.sortBy(ColorProperty.muted);
+        colorPalette.sortBy(ColorSortingProperty.muted);
 
         num lastValue;
 
@@ -593,19 +593,19 @@ void main() {
       }
     });
 
-    const colorProperties = <ColorProperty>[
-      ColorProperty.red,
-      ColorProperty.redOrange,
-      ColorProperty.orange,
-      ColorProperty.yellowOrange,
-      ColorProperty.yellow,
-      ColorProperty.yellowGreen,
-      ColorProperty.green,
-      ColorProperty.cyan,
-      ColorProperty.blue,
-      ColorProperty.blueViolet,
-      ColorProperty.violet,
-      ColorProperty.magenta,
+    const colorProperties = <ColorSortingProperty>[
+      ColorSortingProperty.red,
+      ColorSortingProperty.redOrange,
+      ColorSortingProperty.orange,
+      ColorSortingProperty.yellowOrange,
+      ColorSortingProperty.yellow,
+      ColorSortingProperty.yellowGreen,
+      ColorSortingProperty.green,
+      ColorSortingProperty.cyan,
+      ColorSortingProperty.blue,
+      ColorSortingProperty.blueViolet,
+      ColorSortingProperty.violet,
+      ColorSortingProperty.magenta,
     ];
 
     test('Colors', () {

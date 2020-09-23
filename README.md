@@ -156,80 +156,80 @@ as well as [reverse] which reverses the order of the colors in the palette.
 ```dart
 // Sorts the colors in the palette from the highest
 // perceived brightness value to the lowest.
-colorPalette.sortBy(ColorProperty.brightest);
+colorPalette.sortBy(ColorSortingProperty.brightest);
 
 
 // Sorts the colors in the palette from the lowest
 // perceived brightness value to the highest.
-colorPalette.sortBy(ColorProperty.dimmest);
+colorPalette.sortBy(ColorSortingProperty.dimmest);
 
 // Sorts the colors in the palette from the highest
 // lightness value to the lowest.
-colorPalette.sortBy(ColorProperty.lightest);
+colorPalette.sortBy(ColorSortingProperty.lightest);
 
 // Sorts the colors in the palette from the lowest
 // lightness value to the highest.
-colorPalette.sortBy(ColorProperty.darkest);
+colorPalette.sortBy(ColorSortingProperty.darkest);
 
 // Sorts the colors in the palette from the highest
 // intensity value to the lowest.
-colorPalette.sortBy(ColorProperty.mostIntense);
+colorPalette.sortBy(ColorSortingProperty.mostIntense);
 
 // Sorts the colors in the palette from the lowest
 // intensity value to the highest.
-colorPalette.sortBy(ColorProperty.leastIntense);
+colorPalette.sortBy(ColorSortingProperty.leastIntense);
 
 // Sorts the colors in the palette from the highest
 // saturation value to the lowest.
-colorPalette.sortBy(ColorProperty.deepest);
+colorPalette.sortBy(ColorSortingProperty.deepest);
 
 // Sorts the colors in the palette from the lowest
 // saturation value to the highest.
-colorPalette.sortBy(ColorProperty.dullest);
+colorPalette.sortBy(ColorSortingProperty.dullest);
 
 // Sorts the colors in the palette from the highest combined
 // saturation and value values to the lowest.
-colorPalette.sortBy(ColorProperty.richest);
+colorPalette.sortBy(ColorSortingProperty.richest);
 
 // Sorts the colors in the palette from the lowest combined
 // saturation and value values to the highest.
-colorPalette.sortBy(ColorProperty.muted);
+colorPalette.sortBy(ColorSortingProperty.muted);
 
 // Sorts the colors by their distance to a red hue. (0°)
-colorPalette.sortBy(ColorProperty.red);
+colorPalette.sortBy(ColorSortingProperty.red);
 
 // Sorts the colors by their distance to a red-orange hue. (30°)
-colorPalette.sortBy(ColorProperty.redOrange);
+colorPalette.sortBy(ColorSortingProperty.redOrange);
 
 // Sorts the colors by their distance to a orange hue. (60°)
-colorPalette.sortBy(ColorProperty.orange);
+colorPalette.sortBy(ColorSortingProperty.orange);
 
 // Sorts the colors by their distance to a yellow-orange hue. (90°)
-colorPalette.sortBy(ColorProperty.yellowOrange);
+colorPalette.sortBy(ColorSortingProperty.yellowOrange);
 
 // Sorts the colors by their distance to a yellow hue. (120°)
-colorPalette.sortBy(ColorProperty.yellow);
+colorPalette.sortBy(ColorSortingProperty.yellow);
 
 // Sorts the colors by their distance to a yellow-green hue. (150°)
-colorPalette.sortBy(ColorProperty.yellowGreen);
+colorPalette.sortBy(ColorSortingProperty.yellowGreen);
 
 // Sorts the colors by their distance to a green hue. (180°)
-colorPalette.sortBy(ColorProperty.green);
+colorPalette.sortBy(ColorSortingProperty.green);
 
 // Sorts the colors by their distance to a cyan hue. (210°)
-colorPalette.sortBy(ColorProperty.cyan);
+colorPalette.sortBy(ColorSortingProperty.cyan);
 
 // Sorts the colors by their distance to a blue hue. (240°)
-colorPalette.sortBy(ColorProperty.blue);
+colorPalette.sortBy(ColorSortingProperty.blue);
 
 // Sorts the colors by their distance to a blue-violet hue. (270°)
-colorPalette.sortBy(ColorProperty.blueViolet);
+colorPalette.sortBy(ColorSortingProperty.blueViolet);
 
 // Sorts the colors by their distance to a violet hue. (300°)
-colorPalette.sortBy(ColorProperty.violet);
+colorPalette.sortBy(ColorSortingProperty.violet);
 
 // Sorts the colors by their distance to a magenta hue. (330°)
-colorPalette.sortBy(ColorProperty.magenta);
+colorPalette.sortBy(ColorSortingProperty.magenta);
 ```
 
 The [sortByHue] method will sort the colors based on their position in the

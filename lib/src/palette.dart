@@ -33,7 +33,7 @@ enum ColorSpace {
 /// The properties of a color that can be used for sorting.
 ///
 /// Used by [ColorPalette]'s [sortBy] method.
-enum ColorProperty {
+enum ColorSortingProperty {
   /// Sorts the colors in the palette from the highest
   /// perceived brightness value to the lowest.
   brightest,
@@ -548,64 +548,64 @@ class ColorPalette {
           value1 = a.saturation;
           value2 = b.saturation;
           break;
-        case ColorProperty.richest:
+        case ColorSortingProperty.richest:
           var color1 = a.toHsbColor();
           var color2 = b.toHsbColor();
           value1 = color1.saturation + color1.brightness;
           value2 = color2.saturation + color2.brightness;
           inverse = true;
           break;
-        case ColorProperty.muted:
+        case ColorSortingProperty.muted:
           var color1 = a.toHsbColor();
           var color2 = b.toHsbColor();
           value1 = color1.saturation + color1.brightness;
           value2 = color2.saturation + color2.brightness;
           break;
-        case ColorProperty.red:
+        case ColorSortingProperty.red:
           value1 = _calculateDistance(0, a.hue);
           value2 = _calculateDistance(0, b.hue);
           break;
-        case ColorProperty.redOrange:
+        case ColorSortingProperty.redOrange:
           value1 = _calculateDistance(30, a.hue);
           value2 = _calculateDistance(30, b.hue);
           break;
-        case ColorProperty.orange:
+        case ColorSortingProperty.orange:
           value1 = _calculateDistance(60, a.hue);
           value2 = _calculateDistance(60, b.hue);
           break;
-        case ColorProperty.yellowOrange:
+        case ColorSortingProperty.yellowOrange:
           value1 = _calculateDistance(90, a.hue);
           value2 = _calculateDistance(90, b.hue);
           break;
-        case ColorProperty.yellow:
+        case ColorSortingProperty.yellow:
           value1 = _calculateDistance(120, a.hue);
           value2 = _calculateDistance(120, b.hue);
           break;
-        case ColorProperty.yellowGreen:
+        case ColorSortingProperty.yellowGreen:
           value1 = _calculateDistance(150, a.hue);
           value2 = _calculateDistance(150, b.hue);
           break;
-        case ColorProperty.green:
+        case ColorSortingProperty.green:
           value1 = _calculateDistance(180, a.hue);
           value2 = _calculateDistance(180, b.hue);
           break;
-        case ColorProperty.cyan:
+        case ColorSortingProperty.cyan:
           value1 = _calculateDistance(210, a.hue);
           value2 = _calculateDistance(210, b.hue);
           break;
-        case ColorProperty.blue:
+        case ColorSortingProperty.blue:
           value1 = _calculateDistance(240, a.hue);
           value2 = _calculateDistance(240, b.hue);
           break;
-        case ColorProperty.blueViolet:
+        case ColorSortingProperty.blueViolet:
           value1 = _calculateDistance(270, a.hue);
           value2 = _calculateDistance(270, b.hue);
           break;
-        case ColorProperty.violet:
+        case ColorSortingProperty.violet:
           value1 = _calculateDistance(300, a.hue);
           value2 = _calculateDistance(300, b.hue);
           break;
-        case ColorProperty.magenta:
+        case ColorSortingProperty.magenta:
           value1 = _calculateDistance(330, a.hue);
           value2 = _calculateDistance(330, b.hue);
           break;
