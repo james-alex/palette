@@ -14,4 +14,4 @@ dependencies:
 
 dev_dependencies:
   test: ^1.6.0
-  effective_dart: ^1.2.1
+  pedantic: ^1.9.2
