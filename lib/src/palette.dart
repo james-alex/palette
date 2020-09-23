@@ -17,7 +17,7 @@ enum ColorSpace {
   /// Hue, Saturation, Perceived Brightness
   hsp,
 
-  /// Hue, Saturation, Value
+  /// Hue, Saturation, Brightness
   hsb,
 
   /// Lightness, A (green to red), B (blue to yellow)
@@ -67,11 +67,11 @@ enum ColorProperty {
   dullest,
 
   /// Sorts the colors in the palette from the highest combined
-  /// saturation and value values to the lowest.
+  /// saturation and brightness values to the lowest.
   richest,
 
   /// Sorts the colors in the palette from the lowest combined
-  /// saturation and value values to the highest.
+  /// saturation and brightness values to the highest.
   muted,
 
   /// Sorts the colors by their distance to a red hue. (0°)
@@ -664,7 +664,7 @@ class ColorPalette {
   ///
   /// [hueVariability], [saturationVariability], and [brightnessVariability],
   /// if `> 0`, add a degree of randomness to the selected color's hue,
-  /// saturation, and brightness (HSB's value) values, respectively.
+  /// saturation, and brightness values, respectively.
   ///
   /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
   /// and must not be `null`.
