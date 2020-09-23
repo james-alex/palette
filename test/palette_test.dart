@@ -59,7 +59,7 @@ void main() {
 
     test('Adjacent w/ Variability', () {
       for (var i = 3; i < _testColors.length; i++) {
-        final color = _testColors[i].toHsvColor().toList();;
+        final color = _testColors[i].toHsbColor().toList();;
 
         for (var j = 1; j <= 288; j++) {
           for (var k = 0; k < _vm.length; k++) {
@@ -86,7 +86,7 @@ void main() {
                           (index % 2 == 0 ? -1 : 1))) %
                   360;
 
-              final values = colorPalette[l].toHsvColor().toList();
+              final values = colorPalette[l].toHsbColor().toList();
 
               expect(_hueIsInRange(values[0], expectedHue, hueVariability),
                   equals(true));
@@ -141,13 +141,13 @@ void main() {
               perceivedBrightness: false,
             );
 
-            final colorValues = color.toHsvColor().toList();
+            final colorValues = color.toHsbColor().toList();
 
             for (var l = 0; l < colorPalette.length; l++) {
               final expectedHue =
                   (color.hue + ((360 / colorPalette.length) * l)) % 360;
 
-              final values = colorPalette[l].toHsvColor().toList();
+              final values = colorPalette[l].toHsbColor().toList();
 
               expect(_hueIsInRange(values[0], expectedHue, hueVariability),
                   equals(true));
@@ -190,7 +190,7 @@ void main() {
               continue;
             }
 
-            var values = colorPalette[k].toHsvColor().toList();
+            var values = colorPalette[k].toHsbColor().toList();
 
             values = values.map(_round).toList();
 
@@ -261,7 +261,7 @@ void main() {
               perceivedBrightness: false,
             );
 
-            final colorValues = color.toHsvColor().toList();
+            final colorValues = color.toHsbColor().toList();
 
             for (var l = 1; l < colorPalette.length; l++) {
               var index = l;
@@ -275,7 +275,7 @@ void main() {
                       180) %
                   360;
 
-              final values = colorPalette[l].toHsvColor().toList();
+              final values = colorPalette[l].toHsbColor().toList();
 
               expect(_hueIsInRange(values[0], expectedHue, hueVariability),
                   equals(true));
@@ -551,9 +551,9 @@ void main() {
         num lastValue;
 
         for (var color in colorPalette.colors) {
-          final hsv = color.toHsvColor();
+          final hsb = color.toHsbColor();
 
-          final value = hsv.saturation + hsv.value;
+          final value = hsb.saturation + hsb.brightness;
 
           lastValue ??= value;
 
@@ -580,9 +580,9 @@ void main() {
         num lastValue;
 
         for (var color in colorPalette.colors) {
-          final hsv = color.toHsvColor();
+          final hsb = color.toHsbColor();
 
-          final value = hsv.saturation + hsv.value;
+          final value = hsb.saturation + hsb.brightness;
 
           lastValue ??= value;
 
@@ -792,7 +792,7 @@ void main() {
               colorIsInCorrectSpace = color is HspColor;
               break;
             case 4:
-              colorIsInCorrectSpace = color is HsvColor;
+              colorIsInCorrectSpace = color is HsbColor;
               break;
             case 5:
               colorIsInCorrectSpace = color is LabColor;
