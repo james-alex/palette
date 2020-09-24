@@ -298,6 +298,70 @@ class ColorPalette {
   ColorModel get magenta =>
       colors.reduce((color1, color2) => _compareDistance(color1, color2, 330));
 
+  /// Returns the color with the values closest to [color].
+  ///
+  /// The difference in values is determined by calculating the difference
+  /// between each colors' respective hue, saturation, and perceived brightness
+  /// values, giving the difference in hue twice the weight of the difference
+  /// in the saturation and perceived brightness values.
+  ColorModel closest(ColorModel color) {
+    assert(color != null);
+
+    return _closest(color, colors);
+  }
+
+  /// Returns the color in [palette] with the values closest to [color].
+  ColorModel _closest(ColorModel color, List<ColorModel> palette) {
+    assert(color != null);
+    assert(palette != null);
+
+    ColorModel closestColor;
+    double lowestDifference;
+
+    for (var paletteColor in palette) {
+      final difference = _calculateDifference(color, paletteColor);
+
+      if (lowestDifference == null || lowestDifference < difference) {
+        lowestDifference = difference;
+        closestColor = paletteColor;
+      }
+    }
+
+    return closestColor;
+  }
+
+  /// Returns the color with the values furthest from [color].
+  ///
+  /// The difference in values is determined by calculating the difference
+  /// between each colors' respective hue, saturation, and perceived brightness
+  /// values, giving the difference in hue twice the weight of the difference
+  /// in the saturation and perceived brightness values.
+  ColorModel furthest(ColorModel color) {
+    assert(color != null);
+
+    return _furthest(color, colors);
+  }
+
+  /// Returns the color with the values furthest from [color].
+  ColorModel _furthest(ColorModel color, List<ColorModel> palette) {
+    assert(color != null);
+    assert(palette != null);
+
+    ColorModel furthestColor;
+    num highestDifference;
+
+    for (var paletteColor in palette) {
+      final difference = _calculateDifference(color, paletteColor);
+
+      if (highestDifference == null || highestDifference > difference) {
+        highestDifference = difference;
+        furthestColor = paletteColor;
+      }
+    }
+
+    return furthestColor;
+  }
+
   /// Compares the distance between [hue] and [color1]/[color2].
   /// The color closest to [hue] will be returned.
   static ColorModel _compareDistance(
@@ -324,6 +388,26 @@ class ColorPalette {
     final distance2 = hue1 > hue2 ? (hue2 + 360) - hue1 : (hue1 + 360) - hue2;
 
     return distance1 < distance2 ? distance1 : distance2;
+  }
+
+  /// Calculates the difference between [color1] and [color2] by calculating
+  /// the difference between each colors' respective hue, saturation, and
+  /// perceived brightness values, giving the difference in hue twice the
+  /// weight of the difference in saturation and perceived brightness values.
+  static double _calculateDifference(ColorModel color1, ColorModel color2) {
+    assert(color1 != null);
+    assert(color2 != null);
+
+    color1 = color1.toHspColor();
+    color2 = color2.toHspColor();
+
+    final hue = _calculateDistance(color1.hue, color2.hue);
+    final saturation = (color1.saturation - color2.saturation).abs();
+    final brightness = ((color1 as HspColor).perceivedBrightness -
+            (color2 as HspColor).perceivedBrightness)
+        .abs();
+
+    return hue + ((saturation + brightness) / 2);
   }
 
   /// Converts all [colors] into the [ColorModel] representing [colorSpace].
