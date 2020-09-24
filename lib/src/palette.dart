@@ -146,6 +146,14 @@ enum ColorSortingProperty {
   /// __Note:__ To sort colors by their hue from magenta going in a single
   /// direction around the color wheel, use `sortByHue(330)`.
   magenta,
+
+  /// Sorts the colors from the first color in the palette in the order
+  /// of the values closest to the previous colors' values.
+  similarity,
+
+  /// Sorts the colors from the first color in the palette in the order
+  /// of the values furthest to the previous colors' values.
+  difference,
 }
 
 /// Directions around a color wheel from a starting point.
