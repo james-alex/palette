@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:palette/palette.dart';
 import 'package:test/test.dart';
 
+/// The colors used for testing. Some duplicates are included
+/// to ensure the [ColorPalette.unique] parameter is working.
 const List<ColorModel> _testColors = <ColorModel>[
   RgbColor(0, 0, 0), // Black
   RgbColor(144, 144, 144), // Grey
@@ -20,6 +22,7 @@ const List<ColorModel> _testColors = <ColorModel>[
   RgbColor(209, 16, 110), // Hue 331°
 ];
 
+/// Intervals used to add variability to the values generated in the tests.
 const List<double> _vm = <double>[0.125, 0.375, 0.5, 1.0, 1.225];
 
 void main() {
