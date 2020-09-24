@@ -1,3 +1,3 @@
 library palette;
 
-export './src/palette.dart';
+export 'src/palette.dart';
