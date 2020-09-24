@@ -167,17 +167,18 @@ enum ColorSortingDirection {
   counterClockwise,
 }
 
-/// Contains a [List] of [ColorModel]s.
+/// A color palette made of a [List] of [ColorModel]s.
 ///
 /// Has constructors for generating new color palettes, as well as methods
 /// and operators for modifying and extracting colors from the palette.
 class ColorPalette {
-  /// Contains a [List] of [ColorModel]s.
+  /// A color palette made of a [List] of [ColorModel]s.
   ///
   /// Has constructors for generating new color palettes, as well as methods
   /// and operators for modifying and extracting colors from the palette.
   ///
-  /// [colors] must not be `null`.
+  /// [colors] contains all of the colors in the palette, it must not be `null`,
+  /// but it may be empty.
   const ColorPalette(this.colors) : assert(colors != null);
 
   /// The colors contained in the palette.
