@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:color_models/color_models.dart';
+import 'package:highest_lowest/highest_lowest.dart';
 
 export 'package:color_models/color_models.dart';
 
@@ -590,6 +591,12 @@ class ColorPalette {
   void sortBy(ColorSortingProperty property) {
     assert(property != null);
 
+    if (property == ColorSortingProperty.similarity ||
+        property == ColorSortingProperty.difference) {
+      _sortByDifference(property);
+      return;
+    }
+
     colors.sort((a, b) {
       num value1;
       num value2;
@@ -693,10 +700,76 @@ class ColorPalette {
           value1 = _calculateDistance(330, a.hue);
           value2 = _calculateDistance(330, b.hue);
           break;
+        default:
+          break;
       }
 
       return inverse ? value2.compareTo(value1) : value1.compareTo(value2);
     });
+  }
+
+  /// Sorts the colors in the palette by their similarity to one another.
+  void _sortByDifference(ColorSortingProperty order) {
+    assert(order == ColorSortingProperty.similarity ||
+        order == ColorSortingProperty.difference);
+
+    // Compare every color to every other color and calculate the difference
+    // between them.
+    //
+    // Note: Colors are mapped by their indexes rather than by each color, as
+    // the keys would not be unique if the palette contained multiple instances
+    // of the same color.
+    final differences = <int, List<double>>{};
+
+    for (var i = 0; i < length; i++) {
+      final comparisons = List<double>(length);
+
+      for (var j = 0; j < length; j++) {
+        comparisons[j] =
+            i == j ? null : _calculateDifference(colors[i], colors[j]);
+      }
+
+      differences.addAll({i: comparisons});
+    }
+
+    // Determine the starting color by finding the color that's both the
+    // most and least different to the other colors in the palette.
+    var startingColor = 0;
+    var lowestDifference = differences[0].lowest;
+    var highestDifference = differences[0].highest;
+
+    for (var i = 1; i < length; i++) {
+      final leastDifferent = differences[i].lowest;
+      final mostDifferent = differences[i].highest;
+
+      if ((order == ColorSortingProperty.similarity &&
+              (leastDifferent < lowestDifference ||
+                  (leastDifferent == lowestDifference &&
+                      mostDifferent > highestDifference))) ||
+          (order == ColorSortingProperty.difference &&
+              (mostDifferent > highestDifference ||
+                  (mostDifferent == highestDifference &&
+                      leastDifferent < lowestDifference)))) {
+        startingColor = i;
+        lowestDifference = leastDifferent;
+        highestDifference = mostDifferent;
+      }
+    }
+
+    // Sort the colors in the order of their similiarity
+    final newPalette = <ColorModel>[colors[startingColor]];
+    final oldPalette = List<ColorModel>.from(colors)..removeAt(startingColor);
+
+    while (oldPalette.isNotEmpty) {
+      final color = order == ColorSortingProperty.similarity
+          ? _closest(newPalette.last, oldPalette)
+          : _furthest(newPalette.last, oldPalette);
+
+      newPalette.add(color);
+      oldPalette.remove(color);
+    }
+
+    colors.setAll(0, newPalette);
   }
 
   /// Sorts the palette by each colors hue.
