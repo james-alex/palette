@@ -7,7 +7,6 @@ version: 0.1.0+4
 homepage: https://github.com/james-alex/palette
 
 environment:
-  sdk: '>=2.1.0 <3.0.0'
   sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
