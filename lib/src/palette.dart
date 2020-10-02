@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:color_models/color_models.dart';
 import 'package:highest_lowest/highest_lowest.dart';
+import 'package:unique_list/unique_list.dart';
 
 /// The color spaces by type: CMYK, HSI, HSL, HSP, HSB, LAB, RGB, and XYZ.
 enum ColorSpace {
@@ -814,7 +815,12 @@ class ColorPalette {
   }
 
   /// Returns a [ColorPalette] with an empty list of [colors].
-  factory ColorPalette.empty() => ColorPalette(<ColorModel>[]);
+  factory ColorPalette.empty({bool unique = false}) {
+    assert(unique != null);
+
+    return ColorPalette(
+        unique ? UniqueList<ColorModel>.strict() : <ColorModel>[]);
+  }
 
   /// Generates a [ColorPalette] by selecting colors with hues
   /// to both sides of [color]'s hue value.
@@ -847,6 +853,7 @@ class ColorPalette {
     num saturationVariability = 0,
     num brightnessVariability = 0,
     bool perceivedBrightness = true,
+    bool unique = false,
   }) {
     assert(color != null);
     assert(distance != null);
@@ -860,8 +867,9 @@ class ColorPalette {
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
     assert(perceivedBrightness != null);
+    assert(unique != null);
 
-    final colors = <ColorModel>[];
+    final colors = unique ? UniqueList<ColorModel>.strict() : <ColorModel>[];
 
     if (numberOfColors.isOdd) {
       colors.add(color);
@@ -913,6 +921,7 @@ class ColorPalette {
     num brightnessVariability = 0,
     bool perceivedBrightness = true,
     bool clockwise = true,
+    bool unique = false,
   }) {
     assert(color != null);
     assert(numberOfColors != null && numberOfColors > 0);
@@ -927,7 +936,8 @@ class ColorPalette {
     assert(perceivedBrightness != null);
     assert(clockwise != null);
 
-    final colors = <ColorModel>[color];
+    final colors =
+        unique ? UniqueList<ColorModel>.strict() : <ColorModel>[color];
 
     var distance = 360 / numberOfColors;
     if (!clockwise) distance *= -1;
@@ -999,6 +1009,7 @@ class ColorPalette {
     bool distributeHues = true,
     num distributionVariability,
     bool clockwise = true,
+    bool unique = false,
   }) {
     assert(numberOfColors != null && numberOfColors > 0);
     assert(colorSpace != null);
@@ -1019,12 +1030,13 @@ class ColorPalette {
     assert(perceivedBrightness != null);
     assert(distributeHues != null);
     assert(clockwise != null);
+    assert(unique != null);
 
     if (!distributeHues &&
         (minHue == 0 && maxHue == 360) &&
         (minSaturation == 0 && maxSaturation == 100) &&
         (minBrightness == 0 && maxBrightness == 100)) {
-      final colors = List<ColorModel>.generate(numberOfColors, (_) {
+      final generator = (_) {
         ColorModel color;
 
         switch (colorSpace) {
@@ -1055,7 +1067,12 @@ class ColorPalette {
         }
 
         return color;
-      });
+      };
+
+      final colors = unique
+          ? UniqueList<ColorModel>.generate(numberOfColors, generator,
+              strict: true)
+          : List<ColorModel>.generate(numberOfColors, generator);
 
       return ColorPalette(colors);
     }
@@ -1066,18 +1083,20 @@ class ColorPalette {
     distributionVariability ??= distance.abs() / 4;
     final variabilityRadius = distributionVariability / 2;
 
-    final colors = <ColorModel>[
-      _generateRandomColor(
-        colorSpace,
-        minHue,
-        maxHue,
-        minSaturation,
-        maxSaturation,
-        minBrightness,
-        maxBrightness,
-        perceivedBrightness,
-      ),
-    ];
+    final firstColor = _generateRandomColor(
+      colorSpace,
+      minHue,
+      maxHue,
+      minSaturation,
+      maxSaturation,
+      minBrightness,
+      maxBrightness,
+      perceivedBrightness,
+    );
+
+    final colors = unique
+        ? UniqueList<ColorModel>.of([firstColor], strict: true)
+        : <ColorModel>[firstColor];
 
     var hue = colors.first.hue;
 
@@ -1133,6 +1152,7 @@ class ColorPalette {
     num saturationVariability = 0,
     num brightnessVariability = 0,
     bool perceivedBrightness = true,
+    bool unique = false,
   }) {
     assert(color != null);
     assert(numberOfColors != null && numberOfColors > 0);
@@ -1145,8 +1165,11 @@ class ColorPalette {
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
     assert(perceivedBrightness != null);
+    assert(unique != null);
 
-    final colors = <ColorModel>[color];
+    final colors = unique
+        ? UniqueList<ColorModel>.of([color], strict: true)
+        : <ColorModel>[color];
 
     final oppositeColor = color.opposite;
 
@@ -1185,11 +1208,13 @@ class ColorPalette {
   factory ColorPalette.opposites(
     ColorPalette colorPalette, {
     bool insertOpposites = true,
+    bool unique = false,
   }) {
     assert(colorPalette != null);
     assert(insertOpposites != null);
+    assert(unique != null);
 
-    final colors = <ColorModel>[];
+    final colors = unique ? UniqueList<ColorModel>.strict() : <ColorModel>[];
 
     if (!insertOpposites) colors.addAll(colorPalette.colors);
 

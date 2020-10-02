@@ -12,6 +12,7 @@ environment:
 dependencies:
   color_models: ^0.3.0+1
   highest_lowest: ^0.1.0
+  unique_list: ^0.1.0
 
 dev_dependencies:
   pedantic: ^1.9.2
