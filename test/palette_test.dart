@@ -15,11 +15,17 @@ const List<ColorModel> _testColors = <ColorModel>[
   RgbColor(0, 255, 255), // Cyan
   RgbColor(255, 0, 255), // Magenta
   RgbColor(240, 111, 12), // Hue 26°
+  RgbColor(240, 111, 12), // Hue 26° Duplicate
   RgbColor(102, 204, 51), // Hue 101°
+  RgbColor(102, 204, 51), // Hue 101° Duplicate
   RgbColor(51, 204, 153), // Hue 161°
+  RgbColor(51, 204, 153), // Hue 161° Duplicate
   RgbColor(12, 102, 153), // Hue 201°
+  RgbColor(12, 102, 153), // Hue 201° Duplicate
   RgbColor(120, 42, 212), // Hue 267°
+  RgbColor(120, 42, 212), // Hue 267° Duplicate
   RgbColor(209, 16, 110), // Hue 331°
+  RgbColor(209, 16, 110), // Hue 331° Duplicate
 ];
 
 /// Intervals used to add variability to the values generated in the tests.
