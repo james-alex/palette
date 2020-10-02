@@ -2,8 +2,6 @@ import 'dart:math';
 import 'package:color_models/color_models.dart';
 import 'package:highest_lowest/highest_lowest.dart';
 
-export 'package:color_models/color_models.dart';
-
 /// The color spaces by type: CMYK, HSI, HSL, HSP, HSB, LAB, RGB, and XYZ.
 enum ColorSpace {
   /// Cyan, Magenta, Yellow, Black
