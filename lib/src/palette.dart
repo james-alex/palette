@@ -845,17 +845,26 @@ class ColorPalette {
   /// If [perceivedBrightness] is `true`, colors will be generated in the
   /// HSP color space. If `false`, colors will be generated in the HSB
   /// color space.
+  ///
+  /// If [growable] is `false`, the palette will be constructed with a
+  /// fixed-length list, [numberOfColors] in length. If `true`, a growable
+  /// palette will be constructed instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [UniqueList] will be used instead, requiring all colors
+  /// in the palette be unique.
   factory ColorPalette.adjacent(
-    ColorModel color, {
+    ColorModel seed, {
     int numberOfColors = 5,
     num distance = 30,
     num hueVariability = 0,
     num saturationVariability = 0,
     num brightnessVariability = 0,
     bool perceivedBrightness = true,
+    bool growable = true,
     bool unique = false,
   }) {
-    assert(color != null);
+    assert(seed != null);
     assert(distance != null);
     assert(numberOfColors != null && numberOfColors > 0);
     assert(
@@ -867,24 +876,31 @@ class ColorPalette {
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
     assert(perceivedBrightness != null);
+    assert(growable != null);
     assert(unique != null);
 
-    final colors = unique ? UniqueList<ColorModel>.strict() : <ColorModel>[];
+    final colors = _createNewPalette(numberOfColors, growable, unique);
+
+    var colorsRemaining = numberOfColors;
 
     if (numberOfColors.isOdd) {
-      colors.add(color);
-      numberOfColors -= 1;
+      growable ? colors.add(seed) : colors.first = seed;
+      colorsRemaining -= 1;
     }
 
-    for (var i = 1; i <= numberOfColors; i++) {
-      colors.add(_generateColor(
-        color,
+    for (var i = 1; i <= colorsRemaining; i++) {
+      final color = _generateColor(
+        seed,
         (i % 2 == 0 ? distance * -1 : distance) * ((i / 2).ceil()),
         hueVariability,
         saturationVariability,
         brightnessVariability,
         perceivedBrightness,
-      ));
+      );
+
+      growable
+          ? colors.add(color)
+          : colors[numberOfColors.isOdd ? i : i - 1] = color;
     }
 
     return ColorPalette(colors);
@@ -913,17 +929,24 @@ class ColorPalette {
   /// If [clockwise] is `false`, colors will be generated in a clockwise
   /// order around the color wheel. If `true`, colors will be generated in a
   /// counter-clockwise order. [clockwise] must not be `null`.
+  ///
+  /// If [growable] is `false`, a fixed-length the palette will be constructed
+  /// with a fixed-length list. If `true`, a growable list will be used instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [UniqueList] will be used instead.
   factory ColorPalette.polyad(
-    ColorModel color, {
+    ColorModel seed, {
     int numberOfColors = 5,
     num hueVariability = 0,
     num saturationVariability = 0,
     num brightnessVariability = 0,
     bool perceivedBrightness = true,
     bool clockwise = true,
+    bool growable = true,
     bool unique = false,
   }) {
-    assert(color != null);
+    assert(seed != null);
     assert(numberOfColors != null && numberOfColors > 0);
     assert(
         hueVariability != null && hueVariability >= 0 && hueVariability <= 360);
@@ -935,25 +958,28 @@ class ColorPalette {
         brightnessVariability <= 100);
     assert(perceivedBrightness != null);
     assert(clockwise != null);
+    assert(growable != null);
+    assert(unique != null);
 
-    final colors =
-        unique ? UniqueList<ColorModel>.strict() : <ColorModel>[color];
+    final palette = _createNewPalette(numberOfColors, growable, unique, seed);
 
     var distance = 360 / numberOfColors;
     if (!clockwise) distance *= -1;
 
     for (var i = 1; i < numberOfColors; i++) {
-      colors.add(_generateColor(
-        color,
+      final color = _generateColor(
+        seed,
         distance * i,
         hueVariability,
         saturationVariability,
         brightnessVariability,
         perceivedBrightness,
-      ));
+      );
+
+      growable ? palette.add(color) : palette[i] = color;
     }
 
-    return ColorPalette(colors);
+    return ColorPalette(palette);
   }
 
   /// Generates a [ColorPalette] with [numberOfColors] at random, constrained
@@ -996,6 +1022,12 @@ class ColorPalette {
   /// order around the color wheel. If `true`, colors will be generated in a
   /// counter-clockwise order. [clockwise] will have no effect if
   /// [distributeHues] is `false`. [clockwise] must not be `null`.
+  ///
+  /// If [growable] is `false`, a fixed-length the palette will be constructed
+  /// with a fixed-length list. If `true`, a growable list will be used instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [UniqueList] will be used instead.
   factory ColorPalette.random(
     int numberOfColors, {
     ColorSpace colorSpace = ColorSpace.rgb,
@@ -1009,6 +1041,7 @@ class ColorPalette {
     bool distributeHues = true,
     num distributionVariability,
     bool clockwise = true,
+    bool growable = true,
     bool unique = false,
   }) {
     assert(numberOfColors != null && numberOfColors > 0);
@@ -1030,6 +1063,7 @@ class ColorPalette {
     assert(perceivedBrightness != null);
     assert(distributeHues != null);
     assert(clockwise != null);
+    assert(growable != null);
     assert(unique != null);
 
     if (!distributeHues &&
@@ -1069,12 +1103,13 @@ class ColorPalette {
         return color;
       };
 
-      final colors = unique
+      final palette = unique
           ? UniqueList<ColorModel>.generate(numberOfColors, generator,
-              strict: true)
-          : List<ColorModel>.generate(numberOfColors, generator);
+              growable: growable, strict: true)
+          : List<ColorModel>.generate(numberOfColors, generator,
+              growable: growable);
 
-      return ColorPalette(colors);
+      return ColorPalette(palette);
     }
 
     var distance = (minHue - maxHue) / numberOfColors;
@@ -1083,7 +1118,7 @@ class ColorPalette {
     distributionVariability ??= distance.abs() / 4;
     final variabilityRadius = distributionVariability / 2;
 
-    final firstColor = _generateRandomColor(
+    final seed = _generateRandomColor(
       colorSpace,
       minHue,
       maxHue,
@@ -1094,18 +1129,16 @@ class ColorPalette {
       perceivedBrightness,
     );
 
-    final colors = unique
-        ? UniqueList<ColorModel>.of([firstColor], strict: true)
-        : <ColorModel>[firstColor];
+    final palette = _createNewPalette(numberOfColors, growable, unique, seed);
 
-    var hue = colors.first.hue;
+    var hue = palette.first.hue;
 
     for (var i = 1; i < numberOfColors; i++) {
       hue += distance;
       minHue = (hue - variabilityRadius) % 360;
       maxHue = (hue + variabilityRadius) % 360;
 
-      colors.add(_generateRandomColor(
+      final color = _generateRandomColor(
         colorSpace,
         minHue,
         maxHue,
@@ -1114,10 +1147,12 @@ class ColorPalette {
         minBrightness,
         maxBrightness,
         perceivedBrightness,
-      ));
+      );
+
+      growable ? palette.add(color) : palette[i] = color;
     }
 
-    return ColorPalette(colors);
+    return ColorPalette(palette);
   }
 
   /// Generates a [ColorPalette] by selecting colors to both sides
@@ -1144,17 +1179,24 @@ class ColorPalette {
   /// If [perceivedBrightness] is `true`, colors will be generated in the
   /// HSP color space. If `false`, colors will be generated in the HSB
   /// color space.
+  ///
+  /// If [growable] is `false`, a fixed-length the palette will be constructed
+  /// with a fixed-length list. If `true`, a growable list will be used instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [UniqueList] will be used instead.
   factory ColorPalette.splitComplimentary(
-    ColorModel color, {
+    ColorModel seed, {
     int numberOfColors = 3,
     num distance = 30,
     num hueVariability = 0,
     num saturationVariability = 0,
     num brightnessVariability = 0,
     bool perceivedBrightness = true,
+    bool growable = true,
     bool unique = false,
   }) {
-    assert(color != null);
+    assert(seed != null);
     assert(numberOfColors != null && numberOfColors > 0);
     assert(
         hueVariability != null && hueVariability >= 0 && hueVariability <= 360);
@@ -1165,31 +1207,36 @@ class ColorPalette {
         brightnessVariability >= 0 &&
         brightnessVariability <= 100);
     assert(perceivedBrightness != null);
+    assert(growable != null);
     assert(unique != null);
 
-    final colors = unique
-        ? UniqueList<ColorModel>.of([color], strict: true)
-        : <ColorModel>[color];
+    final palette = _createNewPalette(numberOfColors, growable, unique, seed);
 
-    final oppositeColor = color.opposite;
+    final oppositeColor = seed.opposite;
+
+    var colorsRemaining = numberOfColors;
 
     if (numberOfColors.isEven) {
-      colors.add(oppositeColor);
-      numberOfColors -= 1;
+      growable ? palette.add(oppositeColor) : palette[1] = oppositeColor;
+      colorsRemaining -= 1;
     }
 
-    for (var i = 1; i < numberOfColors; i++) {
-      colors.add(_generateColor(
+    for (var i = 1; i < colorsRemaining; i++) {
+      final color = _generateColor(
         oppositeColor,
         (i % 2 == 0 ? distance * -1 : distance) * ((i / 2).ceil()),
         hueVariability,
         saturationVariability,
         brightnessVariability,
         perceivedBrightness,
-      ));
+      );
+
+      growable
+          ? palette.add(color)
+          : palette[numberOfColors.isEven ? i + 1 : i] = color;
     }
 
-    return ColorPalette(colors);
+    return ColorPalette(palette);
   }
 
   /// Generates a [ColorPalette] from [colorPalette] by appending or
@@ -1205,30 +1252,88 @@ class ColorPalette {
   /// into the list of colors after their respective base colors. If `false`,
   /// the generated colors will be appended to the end of the list.
   /// [insertOpposites] defaults to `true` and must not be `null`.
+  ///
+  /// If [growable] is `false`, a fixed-length the palette will be constructed
+  /// with a fixed-length list. If `true`, a growable list will be used instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [UniqueList] will be used instead.
   factory ColorPalette.opposites(
     ColorPalette colorPalette, {
     bool insertOpposites = true,
+    bool growable = true,
     bool unique = false,
   }) {
     assert(colorPalette != null);
     assert(insertOpposites != null);
+    assert(growable != null);
     assert(unique != null);
 
-    final colors = unique ? UniqueList<ColorModel>.strict() : <ColorModel>[];
+    final numberOfColors = colorPalette.length * 2;
 
-    if (!insertOpposites) colors.addAll(colorPalette.colors);
+    final palette = _createNewPalette(numberOfColors, growable, unique);
 
-    for (var color in colorPalette.colors) {
-      if (insertOpposites) colors.add(color);
-      colors.add(color.opposite);
+    if (!insertOpposites) {
+      growable
+          ? palette.addAll(colorPalette.colors)
+          : palette.setAll(0, colorPalette.colors);
     }
 
-    return ColorPalette(colors);
+    for (var i = 0; i < colorPalette.length; i++) {
+      final color = colorPalette[i];
+
+      if (growable) {
+        if (insertOpposites) palette.add(color);
+        palette.add(color.opposite);
+      } else {
+        if (insertOpposites) {
+          palette[i * 2] = color;
+          palette[(i * 2) + 1] = color.opposite;
+        } else {
+          palette[i + colorPalette.length] = color.opposite;
+        }
+      }
+    }
+
+    return ColorPalette(palette);
+  }
+
+  /// Creates a list to construct a [ColorPalette] with.
+  ///
+  /// If [growable] is `false`, the palette will be constructed with a
+  /// fixed-length list, [numberOfColors] in length. If `true`, a growable
+  /// palette will be constructed instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [UniqueList] will be used instead, requiring all colors
+  /// in the palette be unique.
+  ///
+  /// If [seedColor] isn't `null`, the first element of the returned list will
+  /// be set to it.
+  static List<ColorModel> _createNewPalette(
+    int numberOfColors,
+    bool growable,
+    bool unique, [
+    ColorModel seedColor,
+  ]) {
+    assert(numberOfColors != null && numberOfColors > 0);
+    assert(growable != null);
+    assert(unique != null);
+
+    final palette = unique
+        ? UniqueList<ColorModel>.strict(growable ? null : numberOfColors)
+        : growable ? <ColorModel>[] : List<ColorModel>(numberOfColors);
+
+    if (seedColor != null) {
+      growable ? palette.add(seedColor) : palette.first = seedColor;
+    }
+
+    return palette;
   }
 
   /// Generates a new color in the color space defined by [colorModel].
   static ColorModel _generateColor(
-    ColorModel color,
+    ColorModel seed,
     num distance,
     num hueVariability,
     num saturationVariability,
@@ -1247,8 +1352,8 @@ class ColorPalette {
     assert(perceivedBrightness != null);
 
     final colorValues = perceivedBrightness
-        ? color.toHspColor().toListWithAlpha()
-        : color.toHsbColor().toListWithAlpha();
+        ? seed.toHspColor().toListWithAlpha()
+        : seed.toHsbColor().toListWithAlpha();
 
     colorValues[0] += distance;
 
@@ -1271,7 +1376,7 @@ class ColorPalette {
     }
 
     return _castToType(
-        color,
+        seed,
         perceivedBrightness
             ? HspColor.fromList(colorValues)
             : HsbColor.fromList(colorValues));
@@ -1362,7 +1467,7 @@ class ColorPalette {
     return (Random().nextDouble() * value) - (value / 2);
   }
 
-  /// Casts [color] to the color space defined by [colorModel].
+  /// Casts [color] to the color space defined by [type].
   static ColorModel _castToType(ColorModel type, ColorModel color) {
     assert(type != null);
     assert(color != null);
