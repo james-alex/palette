@@ -841,14 +841,17 @@ bool _isInRange(num value, num expectedValue, num variability) {
 /// Returns `true` if [value] is in the range of
 /// `expectedValue +/- (variability / 2)` in degrees.
 bool _hueIsInRange(num value, num expectedValue, num variability) {
+  // Round the [value] and [expectedValue] to the thousandth.
   value = _round(value);
   expectedValue = _round(expectedValue);
+  // Allow for a 1/1000th margin of error.
+  variability += 0.001;
 
-  final distance1 =
-      value > expectedValue ? value - expectedValue : expectedValue - value;
-  final distance2 = value > expectedValue
+  final distance1 = _round(
+      value > expectedValue ? value - expectedValue : expectedValue - value);
+  final distance2 = _round(value > expectedValue
       ? (expectedValue + 360) - value
-      : (value + 360) - expectedValue;
+      : (value + 360) - expectedValue);
 
   return (distance1 < distance2 ? distance1 : distance2) <= variability
       ? true
