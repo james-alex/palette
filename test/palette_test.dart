@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:meta/meta.dart';
 import 'package:palette/palette.dart';
 import 'package:test/test.dart';
 
@@ -32,298 +33,432 @@ const List<ColorModel> _testColors = <ColorModel>[
 const List<double> _vm = <double>[0.125, 0.375, 0.5, 1.0, 1.225];
 
 void main() {
-  group('Generating Palettes', () {
-    test('Adjacent', () {
-      for (var i = 3; i < _testColors.length; i++) {
-        final color = _testColors[i];
+  group('Palette Generators', () {
+    group('Adjacent', () {
+      group('Uniform', () {
+        void tester({@required bool growable}) {
+          assert(growable != null);
 
-        for (var j = 1; j <= 288; j++) {
-          for (var k = 0; k < _vm.length; k++) {
-            final distance = ((j % 24) + 1) * i * _vm[k];
+          for (var i = 3; i < _testColors.length; i++) {
+            final color = _testColors[i];
 
-            final colorPalette = ColorPalette.adjacent(
-              color,
-              numberOfColors: j,
-              distance: distance,
-              perceivedBrightness: false,
-            );
+            for (var j = 1; j <= 288; j++) {
+              for (var k = 0; k < _vm.length; k++) {
+                final distance = ((j % 24) + 1) * i * _vm[k];
 
-            for (var l = 0; l < colorPalette.length; l++) {
-              var index = l;
-              if (colorPalette.length.isEven) index++;
+                final colorPalette = ColorPalette.adjacent(
+                  color,
+                  numberOfColors: j,
+                  distance: distance,
+                  perceivedBrightness: false,
+                  growable: growable,
+                );
 
-              final expectedHue = (color.hue +
-                      (((index / 2).ceil() * distance) *
-                          (index % 2 == 0 ? -1 : 1))) %
-                  360;
+                for (var l = 0; l < colorPalette.length; l++) {
+                  var index = l;
+                  if (colorPalette.length.isEven) index++;
 
-              expect(_round(colorPalette[l].hue), equals(_round(expectedHue)));
-              expect(_round(colorPalette[l].saturation),
-                  equals(_round(color.saturation)));
+                  final expectedHue = (color.hue +
+                          (((index / 2).ceil() * distance) *
+                              (index % 2 == 0 ? -1 : 1))) %
+                      360;
+
+                  expect(
+                      _round(colorPalette[l].hue), equals(_round(expectedHue)));
+                  expect(_round(colorPalette[l].saturation),
+                      equals(_round(color.saturation)));
+                }
+              }
             }
           }
         }
-      }
-    });
 
-    test('Adjacent w/ Variability', () {
-      for (var i = 3; i < _testColors.length; i++) {
-        final color = _testColors[i].toHsbColor().toList();;
+        test('Growable', () {
+          tester(growable: true);
+        });
 
-        for (var j = 1; j <= 288; j++) {
-          for (var k = 0; k < _vm.length; k++) {
-            final distance = ((j % 24) + 1) * i * _vm[k];
-            final hueVariability = (j % 3) * i * _vm[k];
-            final sbVariability = (j % 2) * i * _vm[k];
+        test('Fixed-Length', () {
+          tester(growable: false);
+        });
+      });
 
-            final colorPalette = ColorPalette.adjacent(
-              _testColors[i],
-              numberOfColors: j,
-              distance: distance,
-              hueVariability: hueVariability,
-              saturationVariability: sbVariability,
-              brightnessVariability: sbVariability,
-              perceivedBrightness: false,
-            );
+      group('Variable', () {
+        void tester({@required bool growable}) {
+          assert(growable != null);
 
-            for (var l = 0; l < colorPalette.length; l++) {
-              var index = l;
-              if (colorPalette.length.isEven) index++;
+          for (var i = 3; i < _testColors.length; i++) {
+            final color = _testColors[i].toHsbColor().toList();
+            ;
 
-              final expectedHue = (color[0] +
-                      (((index / 2).ceil() * distance) *
-                          (index % 2 == 0 ? -1 : 1))) %
-                  360;
+            for (var j = 1; j <= 288; j++) {
+              for (var k = 0; k < _vm.length; k++) {
+                final distance = ((j % 24) + 1) * i * _vm[k];
+                final hueVariability = (j % 3) * i * _vm[k];
+                final sbVariability = (j % 2) * i * _vm[k];
 
-              final values = colorPalette[l].toHsbColor().toList();
+                final colorPalette = ColorPalette.adjacent(
+                  _testColors[i],
+                  numberOfColors: j,
+                  distance: distance,
+                  hueVariability: hueVariability,
+                  saturationVariability: sbVariability,
+                  brightnessVariability: sbVariability,
+                  perceivedBrightness: false,
+                  growable: growable,
+                );
 
-              expect(_hueIsInRange(values[0], expectedHue, hueVariability),
-                  equals(true));
-              expect(_isInRange(values[1], color[1], sbVariability),
-                  equals(true));
-              expect(_isInRange(values[2], color[2], sbVariability),
-                  equals(true));
+                for (var l = 0; l < colorPalette.length; l++) {
+                  var index = l;
+                  if (colorPalette.length.isEven) index++;
+
+                  final expectedHue = (color[0] +
+                          (((index / 2).ceil() * distance) *
+                              (index % 2 == 0 ? -1 : 1))) %
+                      360;
+
+                  final values = colorPalette[l].toHsbColor().toList();
+
+                  expect(_hueIsInRange(values[0], expectedHue, hueVariability),
+                      equals(true));
+                  expect(_isInRange(values[1], color[1], sbVariability),
+                      equals(true));
+                  expect(_isInRange(values[2], color[2], sbVariability),
+                      equals(true));
+                }
+              }
             }
           }
         }
-      }
+
+        test('Growable', () {
+          tester(growable: true);
+        });
+
+        test('Fixed-Length', () {
+          tester(growable: false);
+        });
+      });
     });
 
-    test('Polyad', () {
-      for (var i = 3; i < _testColors.length; i++) {
-        final color = _testColors[i];
+    group('Polyad', () {
+      group('Uniform', () {
+        void tester({@required bool growable}) {
+          assert(growable != null);
 
-        for (var j = 1; j <= 288; j++) {
-          final colorPalette = ColorPalette.polyad(
-            color,
-            numberOfColors: i,
-            perceivedBrightness: false,
-          );
+          for (var i = 3; i < _testColors.length; i++) {
+            final color = _testColors[i];
 
-          for (var k = 0; k < colorPalette.length; k++) {
-            final expectedHue =
-                (color.hue + ((360 / colorPalette.length) * k)) % 360;
+            for (var j = 1; j <= 288; j++) {
+              final colorPalette = ColorPalette.polyad(
+                color,
+                numberOfColors: i,
+                perceivedBrightness: false,
+                growable: growable,
+              );
 
-            expect(_round(colorPalette[k].hue), equals(_round(expectedHue)));
-            expect(_round(colorPalette[k].saturation),
-                equals(_round(color.saturation)));
-          }
-        }
-      }
-    });
+              for (var k = 0; k < colorPalette.length; k++) {
+                final expectedHue =
+                    (color.hue + ((360 / colorPalette.length) * k)) % 360;
 
-    test('Polyad w/ Variability', () {
-      for (var i = 3; i < _testColors.length; i++) {
-        final color = _testColors[i];
-
-        for (var j = 1; j <= 288; j++) {
-          for (var k = 0; k < _vm.length; k++) {
-            final hueVariability = (j % 3) * i * _vm[k];
-            final sbVariability = (j % 2) * i * _vm[k];
-
-            final colorPalette = ColorPalette.polyad(
-              color,
-              numberOfColors: j,
-              hueVariability: hueVariability,
-              saturationVariability: sbVariability,
-              brightnessVariability: sbVariability,
-              perceivedBrightness: false,
-            );
-
-            final colorValues = color.toHsbColor().toList();
-
-            for (var l = 0; l < colorPalette.length; l++) {
-              final expectedHue =
-                  (color.hue + ((360 / colorPalette.length) * l)) % 360;
-
-              final values = colorPalette[l].toHsbColor().toList();
-
-              expect(_hueIsInRange(values[0], expectedHue, hueVariability),
-                  equals(true));
-              expect(_isInRange(values[1], colorValues[1], sbVariability),
-                  equals(true));
-              expect(_isInRange(values[2], colorValues[2], sbVariability),
-                  equals(true));
+                expect(
+                    _round(colorPalette[k].hue), equals(_round(expectedHue)));
+                expect(_round(colorPalette[k].saturation),
+                    equals(_round(color.saturation)));
+              }
             }
           }
         }
-      }
-    });
 
-    test('Random', () {
-      final rng = Random();
+        test('Growable', () {
+          tester(growable: true);
+        });
 
-      for (var i = 1; i <= 288; i++) {
-        for (var j = 0; j < 40; j++) {
-          final minHue = (360 / (j + 1)) * j;
-          final maxHue = 360 - minHue;
-          final minSB = rng.nextInt(101);
-          final maxSB = rng.nextInt(101 - minSB) + minSB;
+        test('Fixed-Length', () {
+          tester(growable: false);
+        });
+      });
 
-          final colorPalette = ColorPalette.random(
-            i,
-            minHue: minHue,
-            maxHue: maxHue,
-            minSaturation: minSB,
-            maxSaturation: maxSB,
-            minBrightness: minSB,
-            maxBrightness: maxSB,
-            perceivedBrightness: false,
-          );
+      group('Variable', () {
+        void tester({@required bool growable}) {
+          assert(growable != null);
 
-          final distance = (minHue - maxHue) / colorPalette.length;
-          final variability = distance.abs() / 4;
+          for (var i = 3; i < _testColors.length; i++) {
+            final color = _testColors[i];
 
-          for (var k = 1; k < colorPalette.length; k++) {
-            if (colorPalette[k].isMonochromatic) {
-              continue;
+            for (var j = 1; j <= 288; j++) {
+              for (var k = 0; k < _vm.length; k++) {
+                final hueVariability = (j % 3) * i * _vm[k];
+                final sbVariability = (j % 2) * i * _vm[k];
+
+                final colorPalette = ColorPalette.polyad(
+                  color,
+                  numberOfColors: j,
+                  hueVariability: hueVariability,
+                  saturationVariability: sbVariability,
+                  brightnessVariability: sbVariability,
+                  perceivedBrightness: false,
+                  growable: growable,
+                );
+
+                final colorValues = color.toHsbColor().toList();
+
+                for (var l = 0; l < colorPalette.length; l++) {
+                  final expectedHue =
+                      (color.hue + ((360 / colorPalette.length) * l)) % 360;
+
+                  final values = colorPalette[l].toHsbColor().toList();
+
+                  expect(_hueIsInRange(values[0], expectedHue, hueVariability),
+                      equals(true));
+                  expect(_isInRange(values[1], colorValues[1], sbVariability),
+                      equals(true));
+                  expect(_isInRange(values[2], colorValues[2], sbVariability),
+                      equals(true));
+                }
+              }
             }
-
-            var values = colorPalette[k].toHsbColor().toList();
-
-            values = values.map(_round).toList();
-
-            final expectedHue = (colorPalette[0].hue + (distance * k)) % 360;
-
-            expect(_hueIsInRange(values[0], expectedHue, variability),
-                equals(true));
-            expect(values[1] >= minSB && values[1] <= maxSB, equals(true));
-            expect(values[2] >= minSB && values[2] <= maxSB, equals(true));
           }
         }
-      }
+
+        test('Growable', () {
+          tester(growable: true);
+        });
+
+        test('Fixed-Length', () {
+          tester(growable: false);
+        });
+      });
     });
 
-    test('Split Complimentary', () {
-      for (var i = 3; i < _testColors.length; i++) {
-        final color = _testColors[i];
+    group('Random', () {
+      void tester({@required bool growable}) {
+        assert(growable != null);
 
-        for (var j = 1; j <= 288; j++) {
-          for (var k = 0; k < _vm.length; k++) {
-            final distance = ((j % 24) + 1) * i * _vm[k];
+        final rng = Random();
 
-            final colorPalette = ColorPalette.splitComplimentary(
-              color,
-              numberOfColors: j,
-              distance: distance,
+        for (var i = 1; i <= 288; i++) {
+          for (var j = 0; j < 40; j++) {
+            final minHue = (360 / (j + 1)) * j;
+            final maxHue = 360 - minHue;
+            final minSB = rng.nextInt(101);
+            final maxSB = rng.nextInt(101 - minSB) + minSB;
+
+            final colorPalette = ColorPalette.random(
+              i,
+              minHue: minHue,
+              maxHue: maxHue,
+              minSaturation: minSB,
+              maxSaturation: maxSB,
+              minBrightness: minSB,
+              maxBrightness: maxSB,
               perceivedBrightness: false,
+              growable: growable,
             );
 
-            for (var l = 1; l < colorPalette.length; l++) {
-              var index = l;
-              if (colorPalette.length.isEven) {
-                index--;
+            final distance = (minHue - maxHue) / colorPalette.length;
+            final variability = distance.abs() / 4;
+
+            for (var k = 1; k < colorPalette.length; k++) {
+              if (colorPalette[k].isMonochromatic) {
+                continue;
               }
 
-              final expectedHue = (color.hue +
-                      (((index / 2).ceil() * distance) *
-                          (index % 2 == 0 ? -1 : 1)) +
-                      180) %
-                  360;
+              var values = colorPalette[k].toHsbColor().toList();
 
-              expect(_round(colorPalette[l].hue), equals(_round(expectedHue)));
-              expect(_round(colorPalette[l].saturation),
-                  equals(_round(color.saturation)));
+              values = values.map(_round).toList();
+
+              final expectedHue = (colorPalette[0].hue + (distance * k)) % 360;
+
+              expect(_hueIsInRange(values[0], expectedHue, variability),
+                  equals(true));
+              expect(values[1] >= minSB && values[1] <= maxSB, equals(true));
+              expect(values[2] >= minSB && values[2] <= maxSB, equals(true));
             }
           }
         }
       }
+
+      test('Growable', () {
+        tester(growable: true);
+      });
+
+      test('Fixed-Length', () {
+        tester(growable: false);
+      });
     });
 
-    test('Split Complimentary w/ Variability', () {
-      for (var i = 3; i < _testColors.length; i++) {
-        final color = _testColors[i];
+    group('Split Complimentary', () {
+      group('Uniform', () {
+        void tester({@required bool growable}) {
+          assert(growable != null);
 
-        for (var j = 1; j <= 288; j++) {
-          for (var k = 0; k < _vm.length; k++) {
-            final distance = ((j % 24) + 1) * i * _vm[k];
-            final hueVariability = (j % 3) * i * _vm[k];
-            final sbVariability = (j % 2) * i * _vm[k];
+          for (var i = 3; i < _testColors.length; i++) {
+            final color = _testColors[i];
 
-            final colorPalette = ColorPalette.splitComplimentary(
-              color,
-              numberOfColors: j,
-              distance: distance,
-              hueVariability: hueVariability,
-              saturationVariability: sbVariability,
-              brightnessVariability: sbVariability,
-              perceivedBrightness: false,
-            );
+            for (var j = 1; j <= 288; j++) {
+              for (var k = 0; k < _vm.length; k++) {
+                final distance = ((j % 24) + 1) * i * _vm[k];
 
-            final colorValues = color.toHsbColor().toList();
+                final colorPalette = ColorPalette.splitComplimentary(
+                  color,
+                  numberOfColors: j,
+                  distance: distance,
+                  perceivedBrightness: false,
+                  growable: growable,
+                );
 
-            for (var l = 1; l < colorPalette.length; l++) {
-              var index = l;
-              if (colorPalette.length.isEven) {
-                index--;
+                for (var l = 1; l < colorPalette.length; l++) {
+                  var index = l;
+                  if (colorPalette.length.isEven) {
+                    index--;
+                  }
+
+                  final expectedHue = (color.hue +
+                          (((index / 2).ceil() * distance) *
+                              (index % 2 == 0 ? -1 : 1)) +
+                          180) %
+                      360;
+
+                  expect(
+                      _round(colorPalette[l].hue), equals(_round(expectedHue)));
+                  expect(_round(colorPalette[l].saturation),
+                      equals(_round(color.saturation)));
+                }
               }
-
-              final expectedHue = (color.hue +
-                      (((index / 2).ceil() * distance) *
-                          (index % 2 == 0 ? -1 : 1)) +
-                      180) %
-                  360;
-
-              final values = colorPalette[l].toHsbColor().toList();
-
-              expect(_hueIsInRange(values[0], expectedHue, hueVariability),
-                  equals(true));
-              expect(_isInRange(values[1], colorValues[1], sbVariability),
-                  equals(true));
-              expect(_isInRange(values[2], colorValues[2], sbVariability),
-                  equals(true));
             }
           }
         }
-      }
+
+        test('Growable', () {
+          tester(growable: true);
+        });
+
+        test('Fixed-Length', () {
+          tester(growable: false);
+        });
+      });
+
+      group('Variable', () {
+        void tester({@required bool growable}) {
+          assert(growable != null);
+
+          for (var i = 3; i < _testColors.length; i++) {
+            final color = _testColors[i];
+
+            for (var j = 1; j <= 288; j++) {
+              for (var k = 0; k < _vm.length; k++) {
+                final distance = ((j % 24) + 1) * i * _vm[k];
+                final hueVariability = (j % 3) * i * _vm[k];
+                final sbVariability = (j % 2) * i * _vm[k];
+
+                final colorPalette = ColorPalette.splitComplimentary(
+                  color,
+                  numberOfColors: j,
+                  distance: distance,
+                  hueVariability: hueVariability,
+                  saturationVariability: sbVariability,
+                  brightnessVariability: sbVariability,
+                  perceivedBrightness: false,
+                  growable: growable,
+                );
+
+                final colorValues = color.toHsbColor().toList();
+
+                for (var l = 1; l < colorPalette.length; l++) {
+                  var index = l;
+                  if (colorPalette.length.isEven) {
+                    index--;
+                  }
+
+                  final expectedHue = (color.hue +
+                          (((index / 2).ceil() * distance) *
+                              (index % 2 == 0 ? -1 : 1)) +
+                          180) %
+                      360;
+
+                  final values = colorPalette[l].toHsbColor().toList();
+
+                  expect(_hueIsInRange(values[0], expectedHue, hueVariability),
+                      equals(true));
+                  expect(_isInRange(values[1], colorValues[1], sbVariability),
+                      equals(true));
+                  expect(_isInRange(values[2], colorValues[2], sbVariability),
+                      equals(true));
+                }
+              }
+            }
+          }
+        }
+
+        test('Growable', () {
+          tester(growable: true);
+        });
+
+        test('Fixed-Length', () {
+          tester(growable: false);
+        });
+      });
     });
 
-    test('Opposites', () {
-      final colorPalette = ColorPalette.opposites(ColorPalette(_testColors));
+    group('Opposites', () {
+      group('Inserted', () {
+        void tester({@required bool growable}) {
+          assert(growable != null);
 
-      for (var i = 0; i < colorPalette.length; i++) {
-        final index = (i / 2).floor();
+          final colorPalette = ColorPalette.opposites(
+            ColorPalette(_testColors),
+            growable: growable,
+          );
 
-        if (i % 2 == 0) {
-          expect(colorPalette[i], equals(_testColors[index]));
-        } else {
-          expect(colorPalette[i], equals(_testColors[index].rotateHue(180)));
+          for (var i = 0; i < colorPalette.length; i++) {
+            final index = (i / 2).floor();
+
+            if (i % 2 == 0) {
+              expect(colorPalette[i], equals(_testColors[index]));
+            } else {
+              expect(
+                  colorPalette[i], equals(_testColors[index].rotateHue(180)));
+            }
+          }
         }
-      }
-    });
 
-    test('Opposites (Appended)', () {
-      final colorPalette = ColorPalette.opposites(
-          ColorPalette(_testColors), insertOpposites: false);
+        test('Growable', () {
+          tester(growable: true);
+        });
 
-      for (var i = 0; i < colorPalette.length; i++) {
-        if (i < _testColors.length) {
-          expect(colorPalette[i], equals(_testColors[i]));
-        } else {
-          expect(colorPalette[i],
-              equals(_testColors[i % _testColors.length].rotateHue(180)));
+        test('Fixed-Length', () {
+          tester(growable: false);
+        });
+      });
+
+      group('Appended', () {
+        void tester({@required bool growable}) {
+          assert(growable != null);
+
+          final colorPalette = ColorPalette.opposites(
+            ColorPalette(_testColors),
+            insertOpposites: false,
+            growable: growable,
+          );
+
+          for (var i = 0; i < colorPalette.length; i++) {
+            if (i < _testColors.length) {
+              expect(colorPalette[i], equals(_testColors[i]));
+            } else {
+              expect(colorPalette[i],
+                  equals(_testColors[i % _testColors.length].rotateHue(180)));
+            }
+          }
         }
-      }
+
+        test('Growable', () {
+          tester(growable: true);
+        });
+
+        test('Fixed-Length', () {
+          tester(growable: false);
+        });
+      });
     });
   });
 
