@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' show Random;
 import 'package:meta/meta.dart';
 import 'package:palette/palette.dart';
 import 'package:test/test.dart';
@@ -88,7 +88,6 @@ void main() {
 
           for (var i = 3; i < _testColors.length; i++) {
             final color = _testColors[i].toHsbColor().toList();
-            ;
 
             for (var j = 1; j <= 288; j++) {
               for (var k = 0; k < _vm.length; k++) {
