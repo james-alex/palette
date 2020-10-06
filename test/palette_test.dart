@@ -3,8 +3,7 @@ import 'package:meta/meta.dart';
 import 'package:palette/palette.dart';
 import 'package:test/test.dart';
 
-/// The colors used for testing. Some duplicates are included
-/// to ensure the [ColorPalette.unique] parameter is working.
+/// The colors used for testing.
 const List<ColorModel> _testColors = <ColorModel>[
   RgbColor(0, 0, 0), // Black
   RgbColor(144, 144, 144), // Grey
