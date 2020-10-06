@@ -819,7 +819,7 @@ void main() {
 
         colorPalette.rotateHue(distance);
 
-        for (var j = 1; j < colorPalette.length; j++) {
+        for (var j = 0; j < colorPalette.length; j++) {
           if (colorPalette[j].isMonochromatic) {
             continue;
           }
