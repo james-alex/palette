@@ -1,3 +1,9 @@
+## [1.0.0] - March 17, 2021
+
+* Migrated to null-safe code.
+
+* Added support for the Oklab color space.
+
 ## [0.2.0] - October 6, 2020
 
 * Upgraded the color_models package to v0.3.0+1 and renamed all instances of

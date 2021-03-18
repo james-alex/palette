@@ -5,8 +5,8 @@
 A package for creating, generating, and interfacing with color palettes.
 
 `palette` is built on top of the [color_models](https://pub.dartlang.org/packages/color_models)
-package, which exposes models for the CMYK, HSI, HSL, HSP, HSB, LAB, RGB, and XYZ
-color spaces.
+package, which exposes models for the CMYK, HSI, HSL, HSP, HSB, LAB, Oklab, RGB,
+and XYZ color spaces.
 
 __For use with Flutter, see:__ https://pub.dev/packages/flutter_palette
 
