@@ -1,0 +1,22 @@
+name: flutter_palette
+description: >-
+  A package for creating, generating, and interfacing with color palettes.
+  With support for the CMYK, HSI, HSL, HSP, HSB, LAB, Oklab, RGB, and XYZ
+  color spaces.
+version: 1.0.0+1
+homepage: https://github.com/james-alex/flutter_palette
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_color_models: ^1.1.0+1
+  palette: ^1.0.0+1
+  unique_list: ^1.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  pedantic: ^1.11.0
