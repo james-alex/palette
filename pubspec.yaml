@@ -1,9 +1,7 @@
 name: palette
 description: >-
   A package for creating, generating, and interfacing with color palettes.
-  With support for constructing colors in the CMYK, HSI, HSL, HSP, HSB, LAB,
-  Oklab, RGB, and XYZ color spaces.
-version: 1.0.0
+version: 1.0.0+1
 homepage: https://github.com/james-alex/palette
 
 environment:
