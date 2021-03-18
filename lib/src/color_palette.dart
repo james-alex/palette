@@ -1,34 +1,7 @@
 import 'dart:math';
 import 'package:color_models/color_models.dart';
-import 'package:highest_lowest/highest_lowest.dart';
+import 'package:num_utilities/num_utilities.dart';
 import 'package:unique_list/unique_list.dart';
-
-/// The color spaces by type: CMYK, HSI, HSL, HSP, HSB, LAB, RGB, and XYZ.
-enum ColorSpace {
-  /// Cyan, Magenta, Yellow, Black
-  cmyk,
-
-  /// Hue, Saturation, Intensity
-  hsi,
-
-  /// Hue, Saturation, Lightness
-  hsl,
-
-  /// Hue, Saturation, Perceived Brightness
-  hsp,
-
-  /// Hue, Saturation, Brightness
-  hsb,
-
-  /// Lightness, A (green to red), B (blue to yellow)
-  lab,
-
-  /// Red, Green, Blue
-  rgb,
-
-  /// __See:__ https://en.wikipedia.org/wiki/CIE_1931_color_space
-  xyz,
-}
 
 /// The properties of a color that can be used for sorting.
 ///
@@ -178,7 +151,7 @@ class ColorPalette {
   ///
   /// [colors] contains all of the colors in the palette, it must not be `null`,
   /// but it may be empty.
-  const ColorPalette(this.colors) : assert(colors != null);
+  const ColorPalette(this.colors);
 
   /// The colors contained in the palette.
   final List<ColorModel> colors;
@@ -313,31 +286,7 @@ class ColorPalette {
   /// between each colors' respective hue, saturation, and perceived brightness
   /// values, giving the difference in hue twice the weight of the difference
   /// in the saturation and perceived brightness values.
-  ColorModel closest(ColorModel color) {
-    assert(color != null);
-
-    return _closest(color, colors);
-  }
-
-  /// Returns the color in [palette] with the values closest to [color].
-  ColorModel _closest(ColorModel color, List<ColorModel> palette) {
-    assert(color != null);
-    assert(palette != null);
-
-    ColorModel closestColor;
-    double lowestDifference;
-
-    for (var paletteColor in palette) {
-      final difference = _calculateDifference(color, paletteColor);
-
-      if (lowestDifference == null || lowestDifference < difference) {
-        lowestDifference = difference;
-        closestColor = paletteColor;
-      }
-    }
-
-    return closestColor;
-  }
+  ColorModel closest(ColorModel color) => colors.closest(color);
 
   /// Returns the color with the values furthest from [color].
   ///
@@ -345,31 +294,7 @@ class ColorPalette {
   /// between each colors' respective hue, saturation, and perceived brightness
   /// values, giving the difference in hue twice the weight of the difference
   /// in the saturation and perceived brightness values.
-  ColorModel furthest(ColorModel color) {
-    assert(color != null);
-
-    return _furthest(color, colors);
-  }
-
-  /// Returns the color with the values furthest from [color].
-  ColorModel _furthest(ColorModel color, List<ColorModel> palette) {
-    assert(color != null);
-    assert(palette != null);
-
-    ColorModel furthestColor;
-    num highestDifference;
-
-    for (var paletteColor in palette) {
-      final difference = _calculateDifference(color, paletteColor);
-
-      if (highestDifference == null || highestDifference > difference) {
-        highestDifference = difference;
-        furthestColor = paletteColor;
-      }
-    }
-
-    return furthestColor;
-  }
+  ColorModel furthest(ColorModel color) => colors.furthest(color);
 
   /// Compares the distance between [hue] and [color1]/[color2].
   /// The color closest to [hue] will be returned.
@@ -378,51 +303,14 @@ class ColorPalette {
     ColorModel color2,
     num hue,
   ) {
-    assert(color1 != null);
-    assert(color2 != null);
-    assert(hue != null && hue >= 0 && hue <= 360);
-
-    final distance1 = _calculateDistance(color1.hue, hue);
-    final distance2 = _calculateDistance(color2.hue, hue);
-
+    assert(hue >= 0 && hue <= 360);
+    final distance1 = color1.hue.calculateDistance(hue);
+    final distance2 = color2.hue.calculateDistance(hue);
     return distance1 <= distance2 ? color1 : color2;
-  }
-
-  /// Calculates the distance between [hue1] and [hue2].
-  static num _calculateDistance(num hue1, num hue2) {
-    assert(hue1 != null && hue1 >= 0 && hue1 <= 360);
-    assert(hue2 != null && hue2 >= 0 && hue2 <= 360);
-
-    final distance1 = hue1 > hue2 ? hue1 - hue2 : hue2 - hue1;
-    final distance2 = hue1 > hue2 ? (hue2 + 360) - hue1 : (hue1 + 360) - hue2;
-
-    return distance1 < distance2 ? distance1 : distance2;
-  }
-
-  /// Calculates the difference between [color1] and [color2] by calculating
-  /// the difference between each colors' respective hue, saturation, and
-  /// perceived brightness values, giving the difference in hue twice the
-  /// weight of the difference in saturation and perceived brightness values.
-  static double _calculateDifference(ColorModel color1, ColorModel color2) {
-    assert(color1 != null);
-    assert(color2 != null);
-
-    color1 = color1.toHspColor();
-    color2 = color2.toHspColor();
-
-    final hue = _calculateDistance(color1.hue, color2.hue);
-    final saturation = (color1.saturation - color2.saturation).abs();
-    final brightness = ((color1 as HspColor).perceivedBrightness -
-            (color2 as HspColor).perceivedBrightness)
-        .abs();
-
-    return hue + ((saturation + brightness) / 2);
   }
 
   /// Converts all [colors] into the [ColorModel] representing [colorSpace].
   void toColorSpace(ColorSpace colorSpace) {
-    assert(colorSpace != null);
-
     for (var i = 0; i < colors.length; i++) {
       switch (colorSpace) {
         case ColorSpace.cmyk:
@@ -442,6 +330,9 @@ class ColorPalette {
           break;
         case ColorSpace.lab:
           colors[i] = colors[i].toLabColor();
+          break;
+        case ColorSpace.oklab:
+          colors[i] = colors[i].toOklabColor();
           break;
         case ColorSpace.rgb:
           colors[i] = colors[i].toRgbColor();
@@ -474,8 +365,6 @@ class ColorPalette {
 
   /// Rotates the hue of every color in the palette by [amount].
   void rotateHue(num amount) {
-    assert(amount != null);
-
     for (var i = 0; i < length; i++) {
       colors[i] = colors[i].rotateHue(amount);
     }
@@ -492,9 +381,6 @@ class ColorPalette {
     num amount, {
     bool relative = true,
   }) {
-    assert(amount != null);
-    assert(relative != null);
-
     for (var i = 0; i < length; i++) {
       colors[i] = colors[i].warmer(amount, relative: relative);
     }
@@ -511,9 +397,6 @@ class ColorPalette {
     num amount, {
     bool relative = true,
   }) {
-    assert(amount != null);
-    assert(relative != null);
-
     for (var i = 0; i < length; i++) {
       colors[i] = colors[i].cooler(amount, relative: relative);
     }
@@ -521,13 +404,11 @@ class ColorPalette {
 
   /// Adds [color] to the end of the palette, extending the length by 1.
   void add(ColorModel color) {
-    assert(color != null);
     colors.add(color);
   }
 
   /// Adds every [ColorModel] contained in [colors] to the end of the palette.
   void addAll(List<ColorModel> colors) {
-    assert(colors != null);
     this.colors.addAll(colors);
   }
 
@@ -535,8 +416,7 @@ class ColorPalette {
   ///
   /// [index] must be `>= 0 && <= length` and must not be `null`.
   void insert(int index, ColorModel color) {
-    assert(index != null && index >= 0 && index <= length);
-    assert(color != null);
+    assert(index >= 0 && index <= length);
     colors.insert(index, color);
   }
 
@@ -544,8 +424,7 @@ class ColorPalette {
   ///
   /// [index] must be `>= 0 && <= length` and must not be `null`.
   void insertAll(int index, List<ColorModel> colors) {
-    assert(index != null && index >= 0 && index <= length);
-    assert(colors != null);
+    assert(index >= 0 && index <= length);
     colors.insertAll(index, colors);
   }
 
@@ -579,8 +458,7 @@ class ColorPalette {
   /// inserted into this palette at the position of [insertAt].
   ///
   /// [insertAt], if not `null`, must be `>= 0 && <= length`.
-  void combine(ColorPalette colorPalette, [int insertAt]) {
-    assert(colorPalette != null);
+  void combine(ColorPalette colorPalette, [int? insertAt]) {
     assert(insertAt == null || (insertAt >= 0 && insertAt <= length));
 
     if (insertAt == null) {
@@ -597,7 +475,7 @@ class ColorPalette {
   ///
   /// [property] must not be `null`.
   void sortBy(ColorSortingProperty property) {
-    assert(property != null);
+    if (colors.length <= 1) return;
 
     if (property == ColorSortingProperty.similarity ||
         property == ColorSortingProperty.difference) {
@@ -606,8 +484,8 @@ class ColorPalette {
     }
 
     colors.sort((a, b) {
-      num value1;
-      num value2;
+      late num value1;
+      late num value2;
       var inverse = false;
 
       switch (property) {
@@ -661,52 +539,52 @@ class ColorPalette {
           value2 = color2.saturation + color2.brightness;
           break;
         case ColorSortingProperty.red:
-          value1 = _calculateDistance(0, a.hue);
-          value2 = _calculateDistance(0, b.hue);
+          value1 = a.hue.calculateDistance(0);
+          value2 = b.hue.calculateDistance(0);
           break;
         case ColorSortingProperty.redOrange:
-          value1 = _calculateDistance(30, a.hue);
-          value2 = _calculateDistance(30, b.hue);
+          value1 = a.hue.calculateDistance(30);
+          value2 = b.hue.calculateDistance(30);
           break;
         case ColorSortingProperty.orange:
-          value1 = _calculateDistance(60, a.hue);
-          value2 = _calculateDistance(60, b.hue);
+          value1 = a.hue.calculateDistance(60);
+          value2 = b.hue.calculateDistance(60);
           break;
         case ColorSortingProperty.yellowOrange:
-          value1 = _calculateDistance(90, a.hue);
-          value2 = _calculateDistance(90, b.hue);
+          value1 = a.hue.calculateDistance(90);
+          value2 = b.hue.calculateDistance(90);
           break;
         case ColorSortingProperty.yellow:
-          value1 = _calculateDistance(120, a.hue);
-          value2 = _calculateDistance(120, b.hue);
+          value1 = a.hue.calculateDistance(120);
+          value2 = b.hue.calculateDistance(120);
           break;
         case ColorSortingProperty.yellowGreen:
-          value1 = _calculateDistance(150, a.hue);
-          value2 = _calculateDistance(150, b.hue);
+          value1 = a.hue.calculateDistance(150);
+          value2 = b.hue.calculateDistance(150);
           break;
         case ColorSortingProperty.green:
-          value1 = _calculateDistance(180, a.hue);
-          value2 = _calculateDistance(180, b.hue);
+          value1 = a.hue.calculateDistance(180);
+          value2 = b.hue.calculateDistance(180);
           break;
         case ColorSortingProperty.cyan:
-          value1 = _calculateDistance(210, a.hue);
-          value2 = _calculateDistance(210, b.hue);
+          value1 = a.hue.calculateDistance(210);
+          value2 = b.hue.calculateDistance(210);
           break;
         case ColorSortingProperty.blue:
-          value1 = _calculateDistance(240, a.hue);
-          value2 = _calculateDistance(240, b.hue);
+          value1 = a.hue.calculateDistance(240);
+          value2 = b.hue.calculateDistance(240);
           break;
         case ColorSortingProperty.blueViolet:
-          value1 = _calculateDistance(270, a.hue);
-          value2 = _calculateDistance(270, b.hue);
+          value1 = a.hue.calculateDistance(270);
+          value2 = b.hue.calculateDistance(270);
           break;
         case ColorSortingProperty.violet:
-          value1 = _calculateDistance(300, a.hue);
-          value2 = _calculateDistance(300, b.hue);
+          value1 = a.hue.calculateDistance(300);
+          value2 = b.hue.calculateDistance(300);
           break;
         case ColorSortingProperty.magenta:
-          value1 = _calculateDistance(330, a.hue);
-          value2 = _calculateDistance(330, b.hue);
+          value1 = a.hue.calculateDistance(330);
+          value2 = b.hue.calculateDistance(330);
           break;
         default:
           break;
@@ -723,41 +601,36 @@ class ColorPalette {
 
     // Compare every color to every other color and calculate the difference
     // between them.
-    //
-    // Note: Colors are mapped by their indexes rather than by each color, as
-    // the keys would not be unique if the palette contained multiple instances
-    // of the same color.
-    final differences = <int, List<double>>{};
+    final differences = <int, List<double?>>{};
 
     for (var i = 0; i < length; i++) {
-      final comparisons = List<double>(length);
-
-      for (var j = 0; j < length; j++) {
-        comparisons[j] =
-            i == j ? null : _calculateDifference(colors[i], colors[j]);
-      }
-
-      differences.addAll({i: comparisons});
+      differences.addAll({
+        i: List<double?>.generate(
+          length,
+          (index) =>
+              i == index ? null : colors[i].calculateDifference(colors[index]),
+        ),
+      });
     }
 
     // Determine the starting color by finding the color that's both the
     // most and least different to the other colors in the palette.
     var startingColor = 0;
-    var lowestDifference = differences[0].lowest;
-    var highestDifference = differences[0].highest;
+    var lowestDifference = differences[0]!.lowest;
+    var highestDifference = differences[0]!.highest;
 
     for (var i = 1; i < length; i++) {
-      final leastDifferent = differences[i].lowest;
-      final mostDifferent = differences[i].highest;
+      final leastDifferent = differences[i]!.lowest;
+      final mostDifferent = differences[i]!.highest;
 
       if ((order == ColorSortingProperty.similarity &&
-              (leastDifferent < lowestDifference ||
+              (leastDifferent! < lowestDifference! ||
                   (leastDifferent == lowestDifference &&
-                      mostDifferent > highestDifference))) ||
+                      mostDifferent! > highestDifference!))) ||
           (order == ColorSortingProperty.difference &&
-              (mostDifferent > highestDifference ||
+              (mostDifferent! > highestDifference! ||
                   (mostDifferent == highestDifference &&
-                      leastDifferent < lowestDifference)))) {
+                      leastDifferent! < lowestDifference!)))) {
         startingColor = i;
         lowestDifference = leastDifferent;
         highestDifference = mostDifferent;
@@ -770,8 +643,8 @@ class ColorPalette {
 
     while (oldPalette.isNotEmpty) {
       final color = order == ColorSortingProperty.similarity
-          ? _closest(newPalette.last, oldPalette)
-          : _furthest(newPalette.last, oldPalette);
+          ? oldPalette.closest(newPalette.last)
+          : oldPalette.furthest(newPalette.last);
 
       newPalette.add(color);
       oldPalette.remove(color);
@@ -793,8 +666,7 @@ class ColorPalette {
     num startingFrom = 0,
     bool clockwise = true,
   }) {
-    assert(startingFrom != null && startingFrom >= 0 && startingFrom <= 360);
-    assert(clockwise != null);
+    assert(startingFrom >= 0 && startingFrom <= 360);
 
     colors.sort((a, b) {
       var hue1 = a.hue;
@@ -816,17 +688,14 @@ class ColorPalette {
 
   /// Returns a [ColorPalette] with an empty list of [colors].
   factory ColorPalette.empty({bool unique = false}) {
-    assert(unique != null);
-
-    return ColorPalette(
-        unique ? UniqueList<ColorModel>.strict() : <ColorModel>[]);
+    return ColorPalette(unique ? UniqueList<ColorModel>() : <ColorModel>[]);
   }
 
   /// Generates a [ColorPalette] by selecting colors with hues
-  /// to both sides of [color]'s hue value.
+  /// to both sides of [seed]'s hue value.
   ///
-  /// If [numberOfColors] is odd, [color] will be included in the palette.
-  /// If even, [color] will be excluded from the palette. [numberOfColors]
+  /// If [numberOfColors] is odd, [seed] will be included in the palette.
+  /// If even, [seed] will be excluded from the palette. [numberOfColors]
   /// defaults to `5`, must be `> 0`, and must not be `null`.
   ///
   /// [distance] is the base spacing between the selected colors' hue values.
@@ -851,7 +720,7 @@ class ColorPalette {
   /// palette will be constructed instead.
   ///
   /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [UniqueList] will be used instead, requiring all colors
+  /// If `true`, a [uniqueList] will be used instead, requiring all colors
   /// in the palette be unique.
   factory ColorPalette.adjacent(
     ColorModel seed, {
@@ -864,27 +733,16 @@ class ColorPalette {
     bool growable = true,
     bool unique = false,
   }) {
-    assert(seed != null);
-    assert(distance != null);
-    assert(numberOfColors != null && numberOfColors > 0);
-    assert(
-        hueVariability != null && hueVariability >= 0 && hueVariability <= 360);
-    assert(saturationVariability != null &&
-        saturationVariability >= 0 &&
-        saturationVariability <= 100);
-    assert(brightnessVariability != null &&
-        brightnessVariability >= 0 &&
-        brightnessVariability <= 100);
-    assert(perceivedBrightness != null);
-    assert(growable != null);
-    assert(unique != null);
+    assert(numberOfColors > 0);
+    assert(hueVariability >= 0 && hueVariability <= 360);
+    assert(saturationVariability >= 0 && saturationVariability <= 100);
+    assert(brightnessVariability >= 0 && brightnessVariability <= 100);
 
-    final colors = _createNewPalette(numberOfColors, growable, unique);
+    final palette = <ColorModel>[];
 
     var colorsRemaining = numberOfColors;
-
     if (numberOfColors.isOdd) {
-      growable ? colors.add(seed) : colors.first = seed;
+      palette.add(seed);
       colorsRemaining -= 1;
     }
 
@@ -898,16 +756,16 @@ class ColorPalette {
         perceivedBrightness,
       );
 
-      growable
-          ? colors.add(color)
-          : colors[numberOfColors.isOdd ? i : i - 1] = color;
+      palette.add(color);
     }
 
-    return ColorPalette(colors);
+    return ColorPalette(unique
+        ? UniqueList<ColorModel>.from(palette, growable: growable)
+        : List<ColorModel>.from(palette, growable: growable));
   }
 
   /// Generates a [ColorPalette] by selecting colors with hues
-  /// evenly spaced around the color wheel from [color].
+  /// evenly spaced around the color wheel from [seed].
   ///
   /// [numberOfColors] defaults to `5`, must be `> 0` and must
   /// not be `null`.
@@ -934,7 +792,7 @@ class ColorPalette {
   /// with a fixed-length list. If `true`, a growable list will be used instead.
   ///
   /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [UniqueList] will be used instead.
+  /// If `true`, a [uniqueList] will be used instead.
   factory ColorPalette.polyad(
     ColorModel seed, {
     int numberOfColors = 5,
@@ -946,22 +804,12 @@ class ColorPalette {
     bool growable = true,
     bool unique = false,
   }) {
-    assert(seed != null);
-    assert(numberOfColors != null && numberOfColors > 0);
-    assert(
-        hueVariability != null && hueVariability >= 0 && hueVariability <= 360);
-    assert(saturationVariability != null &&
-        saturationVariability >= 0 &&
-        saturationVariability <= 100);
-    assert(brightnessVariability != null &&
-        brightnessVariability >= 0 &&
-        brightnessVariability <= 100);
-    assert(perceivedBrightness != null);
-    assert(clockwise != null);
-    assert(growable != null);
-    assert(unique != null);
+    assert(numberOfColors > 0);
+    assert(hueVariability >= 0 && hueVariability <= 360);
+    assert(saturationVariability >= 0 && saturationVariability <= 100);
+    assert(brightnessVariability >= 0 && brightnessVariability <= 100);
 
-    final palette = _createNewPalette(numberOfColors, growable, unique, seed);
+    final palette = <ColorModel>[seed];
 
     var distance = 360 / numberOfColors;
     if (!clockwise) distance *= -1;
@@ -976,10 +824,12 @@ class ColorPalette {
         perceivedBrightness,
       );
 
-      growable ? palette.add(color) : palette[i] = color;
+      palette.add(color);
     }
 
-    return ColorPalette(palette);
+    return ColorPalette(unique
+        ? UniqueList<ColorModel>.from(palette, growable: growable)
+        : List<ColorModel>.from(palette, growable: growable));
   }
 
   /// Generates a [ColorPalette] with [numberOfColors] at random, constrained
@@ -1027,7 +877,7 @@ class ColorPalette {
   /// with a fixed-length list. If `true`, a growable list will be used instead.
   ///
   /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [UniqueList] will be used instead.
+  /// If `true`, a [uniqueList] will be used instead.
   factory ColorPalette.random(
     int numberOfColors, {
     ColorSpace colorSpace = ColorSpace.rgb,
@@ -1039,32 +889,18 @@ class ColorPalette {
     num maxBrightness = 100,
     bool perceivedBrightness = true,
     bool distributeHues = true,
-    num distributionVariability,
+    num? distributionVariability,
     bool clockwise = true,
     bool growable = true,
     bool unique = false,
   }) {
-    assert(numberOfColors != null && numberOfColors > 0);
-    assert(colorSpace != null);
-    assert(minHue != null && minHue >= 0 && minHue <= 360);
-    assert(maxHue != null && maxHue >= 0 && maxHue <= 360);
-    assert(minSaturation != null &&
-        minSaturation >= 0 &&
-        minSaturation <= maxSaturation);
-    assert(maxSaturation != null &&
-        maxSaturation >= minSaturation &&
-        maxSaturation <= 100);
-    assert(minBrightness != null &&
-        minBrightness >= 0 &&
-        minBrightness <= maxBrightness);
-    assert(maxBrightness != null &&
-        maxBrightness >= minBrightness &&
-        maxBrightness <= 100);
-    assert(perceivedBrightness != null);
-    assert(distributeHues != null);
-    assert(clockwise != null);
-    assert(growable != null);
-    assert(unique != null);
+    assert(numberOfColors > 0);
+    assert(minHue >= 0 && minHue <= 360);
+    assert(maxHue >= 0 && maxHue <= 360);
+    assert(minSaturation >= 0 && minSaturation <= maxSaturation);
+    assert(maxSaturation >= minSaturation && maxSaturation <= 100);
+    assert(minBrightness >= 0 && minBrightness <= maxBrightness);
+    assert(maxBrightness >= minBrightness && maxBrightness <= 100);
 
     if (!distributeHues &&
         (minHue == 0 && maxHue == 360) &&
@@ -1092,6 +928,9 @@ class ColorPalette {
           case ColorSpace.lab:
             color = LabColor.random();
             break;
+          case ColorSpace.oklab:
+            color = OklabColor.random();
+            break;
           case ColorSpace.rgb:
             color = RgbColor.random();
             break;
@@ -1103,13 +942,11 @@ class ColorPalette {
         return color;
       };
 
-      final palette = unique
+      return ColorPalette(unique
           ? UniqueList<ColorModel>.generate(numberOfColors, generator,
               growable: growable, strict: true)
           : List<ColorModel>.generate(numberOfColors, generator,
-              growable: growable);
-
-      return ColorPalette(palette);
+              growable: growable));
     }
 
     var distance = (minHue - maxHue) / numberOfColors;
@@ -1129,7 +966,7 @@ class ColorPalette {
       perceivedBrightness,
     );
 
-    final palette = _createNewPalette(numberOfColors, growable, unique, seed);
+    final palette = <ColorModel>[seed];
 
     var hue = palette.first.hue;
 
@@ -1149,16 +986,18 @@ class ColorPalette {
         perceivedBrightness,
       );
 
-      growable ? palette.add(color) : palette[i] = color;
+      palette.add(color);
     }
 
-    return ColorPalette(palette);
+    return ColorPalette(unique
+        ? UniqueList<ColorModel>.from(palette, growable: growable)
+        : List<ColorModel>.from(palette, growable: growable));
   }
 
   /// Generates a [ColorPalette] by selecting colors to both sides
-  /// of the color with the opposite [hue] of [color].
+  /// of the color with the opposite [hue] of [seed].
   ///
-  /// If [numberOfColors] is even, the coolor opposite of [color] will
+  /// If [numberOfColors] is even, the coolor opposite of [seed] will
   /// be included in the palette. If odd, the opposite color will be
   /// excluded from the palette. [numberOfColors] defaults to `3`, must
   /// be `> 0`, and must not be `null`.
@@ -1184,7 +1023,7 @@ class ColorPalette {
   /// with a fixed-length list. If `true`, a growable list will be used instead.
   ///
   /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [UniqueList] will be used instead.
+  /// If `true`, a [uniqueList] will be used instead.
   factory ColorPalette.splitComplimentary(
     ColorModel seed, {
     int numberOfColors = 3,
@@ -1196,28 +1035,18 @@ class ColorPalette {
     bool growable = true,
     bool unique = false,
   }) {
-    assert(seed != null);
-    assert(numberOfColors != null && numberOfColors > 0);
-    assert(
-        hueVariability != null && hueVariability >= 0 && hueVariability <= 360);
-    assert(saturationVariability != null &&
-        saturationVariability >= 0 &&
-        saturationVariability <= 100);
-    assert(brightnessVariability != null &&
-        brightnessVariability >= 0 &&
-        brightnessVariability <= 100);
-    assert(perceivedBrightness != null);
-    assert(growable != null);
-    assert(unique != null);
+    assert(numberOfColors > 0);
+    assert(hueVariability >= 0 && hueVariability <= 360);
+    assert(saturationVariability >= 0 && saturationVariability <= 100);
+    assert(brightnessVariability >= 0 && brightnessVariability <= 100);
 
-    final palette = _createNewPalette(numberOfColors, growable, unique, seed);
+    final palette = <ColorModel>[seed];
 
     final oppositeColor = seed.opposite;
-
     var colorsRemaining = numberOfColors;
 
     if (numberOfColors.isEven) {
-      growable ? palette.add(oppositeColor) : palette[1] = oppositeColor;
+      palette.add(oppositeColor);
       colorsRemaining -= 1;
     }
 
@@ -1231,12 +1060,12 @@ class ColorPalette {
         perceivedBrightness,
       );
 
-      growable
-          ? palette.add(color)
-          : palette[numberOfColors.isEven ? i + 1 : i] = color;
+      palette.add(color);
     }
 
-    return ColorPalette(palette);
+    return ColorPalette(unique
+        ? UniqueList<ColorModel>.from(palette, growable: growable)
+        : List<ColorModel>.from(palette, growable: growable));
   }
 
   /// Generates a [ColorPalette] from [colorPalette] by appending or
@@ -1257,78 +1086,25 @@ class ColorPalette {
   /// with a fixed-length list. If `true`, a growable list will be used instead.
   ///
   /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [UniqueList] will be used instead.
+  /// If `true`, a [uniqueList] will be used instead.
   factory ColorPalette.opposites(
     ColorPalette colorPalette, {
     bool insertOpposites = true,
     bool growable = true,
     bool unique = false,
   }) {
-    assert(colorPalette != null);
-    assert(insertOpposites != null);
-    assert(growable != null);
-    assert(unique != null);
-
-    final numberOfColors = colorPalette.length * 2;
-
-    final palette = _createNewPalette(numberOfColors, growable, unique);
-
-    if (!insertOpposites) {
-      growable
-          ? palette.addAll(colorPalette.colors)
-          : palette.setAll(0, colorPalette.colors);
-    }
+    final palette = <ColorModel>[];
+    if (!insertOpposites) palette.addAll(colorPalette.colors);
 
     for (var i = 0; i < colorPalette.length; i++) {
       final color = colorPalette[i];
-
-      if (growable) {
-        if (insertOpposites) palette.add(color);
-        palette.add(color.opposite);
-      } else {
-        if (insertOpposites) {
-          palette[i * 2] = color;
-          palette[(i * 2) + 1] = color.opposite;
-        } else {
-          palette[i + colorPalette.length] = color.opposite;
-        }
-      }
+      if (insertOpposites) palette.add(color);
+      palette.add(color.opposite);
     }
 
-    return ColorPalette(palette);
-  }
-
-  /// Creates a list to construct a [ColorPalette] with.
-  ///
-  /// If [growable] is `false`, the palette will be constructed with a
-  /// fixed-length list, [numberOfColors] in length. If `true`, a growable
-  /// palette will be constructed instead.
-  ///
-  /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [UniqueList] will be used instead, requiring all colors
-  /// in the palette be unique.
-  ///
-  /// If [seedColor] isn't `null`, the first element of the returned list will
-  /// be set to it.
-  static List<ColorModel> _createNewPalette(
-    int numberOfColors,
-    bool growable,
-    bool unique, [
-    ColorModel seedColor,
-  ]) {
-    assert(numberOfColors != null && numberOfColors > 0);
-    assert(growable != null);
-    assert(unique != null);
-
-    final palette = unique
-        ? UniqueList<ColorModel>.strict(growable ? null : numberOfColors)
-        : growable ? <ColorModel>[] : List<ColorModel>(numberOfColors);
-
-    if (seedColor != null) {
-      growable ? palette.add(seedColor) : palette.first = seedColor;
-    }
-
-    return palette;
+    return ColorPalette(unique
+        ? UniqueList<ColorModel>.from(palette, growable: growable)
+        : List<ColorModel>.from(palette, growable: growable));
   }
 
   /// Generates a new color in the color space defined by [colorModel].
@@ -1340,16 +1116,9 @@ class ColorPalette {
     num brightnessVariability,
     bool perceivedBrightness,
   ) {
-    assert(distance != null);
-    assert(
-        hueVariability != null && hueVariability >= 0 && hueVariability <= 360);
-    assert(saturationVariability != null &&
-        saturationVariability >= 0 &&
-        saturationVariability <= 100);
-    assert(brightnessVariability != null &&
-        brightnessVariability >= 0 &&
-        brightnessVariability <= 100);
-    assert(perceivedBrightness != null);
+    assert(hueVariability >= 0 && hueVariability <= 360);
+    assert(saturationVariability >= 0 && saturationVariability <= 100);
+    assert(brightnessVariability >= 0 && brightnessVariability <= 100);
 
     final colorValues = perceivedBrightness
         ? seed.toHspColor().toListWithAlpha()
@@ -1375,11 +1144,10 @@ class ColorPalette {
               .clamp(0, 100);
     }
 
-    return _castToType(
-        seed,
-        perceivedBrightness
+    return (perceivedBrightness
             ? HspColor.fromList(colorValues)
-            : HsbColor.fromList(colorValues));
+            : HsbColor.fromList(colorValues))
+        .castTo(seed);
   }
 
   /// Generates a random color in the color space defined by [colorSpace].
@@ -1393,22 +1161,12 @@ class ColorPalette {
     num maxBrightness,
     bool perceivedBrightness,
   ) {
-    assert(colorSpace != null);
-    assert(minHue != null && minHue >= 0 && minHue <= 360);
-    assert(maxHue != null && maxHue >= 0 && maxHue <= 360);
-    assert(minSaturation != null &&
-        minSaturation >= 0 &&
-        minSaturation <= maxSaturation);
-    assert(maxSaturation != null &&
-        maxSaturation >= minSaturation &&
-        maxSaturation <= 100);
-    assert(minBrightness != null &&
-        minBrightness >= 0 &&
-        minBrightness <= maxBrightness);
-    assert(maxBrightness != null &&
-        maxBrightness >= minBrightness &&
-        maxBrightness <= 100);
-    assert(perceivedBrightness != null);
+    assert(minHue >= 0 && minHue <= 360);
+    assert(maxHue >= 0 && maxHue <= 360);
+    assert(minSaturation >= 0 && minSaturation <= maxSaturation);
+    assert(maxSaturation >= minSaturation && maxSaturation <= 100);
+    assert(minBrightness >= 0 && minBrightness <= maxBrightness);
+    assert(maxBrightness >= minBrightness && maxBrightness <= 100);
 
     final randomColor = perceivedBrightness
         ? HspColor.random(
@@ -1428,69 +1186,13 @@ class ColorPalette {
             maxBrightness: maxBrightness,
           );
 
-    ColorModel color;
-
-    switch (colorSpace) {
-      case ColorSpace.cmyk:
-        color = randomColor.toCmykColor();
-        break;
-      case ColorSpace.hsi:
-        color = randomColor.toHsiColor();
-        break;
-      case ColorSpace.hsl:
-        color = randomColor.toHslColor();
-        break;
-      case ColorSpace.hsp:
-        color = randomColor.toHspColor();
-        break;
-      case ColorSpace.hsb:
-        color = randomColor.toHsbColor();
-        break;
-      case ColorSpace.lab:
-        color = randomColor.toLabColor();
-        break;
-      case ColorSpace.rgb:
-        color = randomColor.toRgbColor();
-        break;
-      case ColorSpace.xyz:
-        color = randomColor.toXyzColor();
-        break;
-    }
-
-    return color;
+    return colorSpace.from(randomColor);
   }
 
   /// Calculates a range from `0` with a radius of `value / 2`.
   static double _calculateVariability(num value) {
-    assert(value != null && value > 0);
-
+    assert(value > 0);
     return (Random().nextDouble() * value) - (value / 2);
-  }
-
-  /// Casts [color] to the color space defined by [type].
-  static ColorModel _castToType(ColorModel type, ColorModel color) {
-    assert(type != null);
-    assert(color != null);
-
-    if (type is CmykColor) {
-      color = color.toCmykColor();
-    } else if (type is HsiColor) {
-      color = color.toHsiColor();
-    } else if (type is HslColor) {
-      color = color.toHslColor();
-    } else if (type is HspColor) {
-      color = color.toHspColor();
-    } else if (type is HsbColor) {
-      color = color.toHsbColor();
-    } else if (type is LabColor) {
-      color = color.toLabColor();
-    } else if (type is RgbColor) {
-      color = color.toRgbColor();
-    } else if (type is XyzColor) {
-      color = color.toXyzColor();
-    }
-
-    return color;
   }
 
   /// The number of [colors] in the palette.
@@ -1507,18 +1209,81 @@ class ColorPalette {
   /// [other] may be a [ColorPalette] or a [List<ColorModel>].
   ColorPalette operator +(dynamic other) {
     assert(other is ColorPalette || other is List<ColorModel>);
-
-    List<ColorModel> colors;
-
+    late List<ColorModel> colors;
     if (other is ColorPalette) {
       colors = other.colors;
-    } else if (other is List<ColorModel>) {
-      colors = other;
+    } else {
+      colors = other as List<ColorModel>;
     }
-
     return ColorPalette(this.colors + colors);
   }
 
   @override
   String toString() => colors.toString();
+}
+
+extension _CalculateDifference on ColorModel {
+  /// Calculates the difference between [color1] and [color2] by calculating
+  /// the difference between each colors' respective hue, saturation, and
+  /// perceived brightness values, giving the difference in hue twice the
+  /// weight of the difference in saturation and perceived brightness values.
+  double calculateDifference(ColorModel other) {
+    final color1 = toHspColor();
+    final color2 = other.toHspColor();
+
+    final hue = color1.hue.calculateDistance(color2.hue);
+    final saturation = (color1.saturation - color2.saturation).abs();
+    final brightness =
+        (color1.perceivedBrightness - color2.perceivedBrightness).abs();
+
+    return hue + ((saturation + brightness) / 2);
+  }
+}
+
+extension _ClosestFurthest on List<ColorModel> {
+  /// Returns the color in the list closest to [color].
+  ColorModel closest(ColorModel color) {
+    late ColorModel closestColor;
+    double? lowestDifference;
+
+    for (var paletteColor in this) {
+      final difference = color.calculateDifference(paletteColor);
+
+      if (lowestDifference == null || lowestDifference < difference) {
+        lowestDifference = difference;
+        closestColor = paletteColor;
+      }
+    }
+
+    return closestColor;
+  }
+
+  /// Returns the color in the lsit furthest from [color].
+  ColorModel furthest(ColorModel color) {
+    late ColorModel furthestColor;
+    num? highestDifference;
+
+    for (var paletteColor in this) {
+      final difference = color.calculateDifference(paletteColor);
+
+      if (highestDifference == null || highestDifference > difference) {
+        highestDifference = difference;
+        furthestColor = paletteColor;
+      }
+    }
+
+    return furthestColor;
+  }
+}
+
+extension _CalculateDistance on num {
+  /// Calculates the distance between [hue1] and [hue2].
+  num calculateDistance(num other) {
+    assert(this >= 0 && this <= 360);
+    assert(other >= 0 && other <= 360);
+    final distance1 = this > other ? this - other : other - this;
+    final distance2 =
+        this > other ? (other + 360) - this : (this + 360) - other;
+    return distance1 < distance2 ? distance1 : distance2;
+  }
 }
