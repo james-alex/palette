@@ -1,4 +1,6 @@
 import 'dart:math' show Random;
+import 'package:flutter/painting.dart';
+import 'package:flutter_color_models/flutter_color_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_palette/flutter_palette.dart';
 
