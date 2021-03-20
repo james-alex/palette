@@ -17,17 +17,6 @@ class ColorPalette extends cp.ColorPalette {
   /// [colors] must not be `null`.
   const ColorPalette(this.colors) : super(colors);
 
-  @override
-  final List<ColorModel> colors;
-
-  /// Returns the color palette as a list of [Color]s.
-  List<Color> toColors({bool growable = true}) =>
-      colors.map<Color>((color) => color.toColor()).toList(growable: growable);
-
-  @override
-  ColorPalette getRange(int start, int end) =>
-      ColorPalette(colors.getRange(start, end).toList());
-
   /// Constructs a [ColorPalette] from [colors].
   factory ColorPalette.from(List<Color> colors) {
     return ColorPalette(List<ColorModel>.from(
@@ -283,6 +272,17 @@ class ColorPalette extends cp.ColorPalette {
       unique: unique,
     ));
   }
+
+  @override
+  final List<ColorModel> colors;
+
+  /// Returns the color palette as a list of [Color]s.
+  List<Color> toColors({bool growable = true}) =>
+      colors.map<Color>((color) => color.toColor()).toList(growable: growable);
+
+  @override
+  ColorPalette getRange(int start, int end) =>
+      ColorPalette(colors.getRange(start, end).toList());
 
   /// Returns the concatenation of this palette's colors and [other]s'.
   ///
