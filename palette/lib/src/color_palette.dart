@@ -3,142 +3,6 @@ import 'package:color_models/color_models.dart';
 import 'package:num_utilities/num_utilities.dart';
 import 'package:unique_list/unique_list.dart';
 
-/// The properties of a color that can be used for sorting.
-///
-/// Used by [ColorPalette]'s [sortBy] method.
-enum ColorSortingProperty {
-  /// Sorts the colors in the palette from the highest
-  /// perceived brightness value to the lowest.
-  brightest,
-
-  /// Sorts the colors in the palette from the lowest
-  /// perceived brightness value to the highest.
-  dimmest,
-
-  /// Sorts the colors in the palette from the highest
-  /// lightness value to the lowest.
-  lightest,
-
-  /// Sorts the colors in the palette from the lowest
-  /// lightness value to the highest.
-  darkest,
-
-  /// Sorts the colors in the palette from the highest
-  /// intensity value to the lowest.
-  mostIntense,
-
-  /// Sorts the colors in the palette from the lowest
-  /// intensity value to the highest.
-  leastIntense,
-
-  /// Sorts the colors in the palette from the highest
-  /// saturation value to the lowest.
-  deepest,
-
-  /// Sorts the colors in the palette from the lowest
-  /// saturation value to the highest.
-  dullest,
-
-  /// Sorts the colors in the palette from the highest combined
-  /// saturation and brightness values to the lowest.
-  richest,
-
-  /// Sorts the colors in the palette from the lowest combined
-  /// saturation and brightness values to the highest.
-  muted,
-
-  /// Sorts the colors by their distance to a red hue. (0°)
-  ///
-  /// __Note:__ To sort colors by their hue from red going in a single
-  /// direction around the color wheel, use `sortByHue(0)`.
-  red,
-
-  /// Sorts the colors by their distance to a red-orange hue. (30°)
-  ///
-  /// __Note:__ To sort colors by their hue from red-orange going in a single
-  /// direction around the color wheel, use `sortByHue(30)`.
-  redOrange,
-
-  /// Sorts the colors by their distance to a orange hue. (60°)
-  ///
-  /// __Note:__ To sort colors by their hue from orange going in a single
-  /// direction around the color wheel, use `sortByHue(60)`.
-  orange,
-
-  /// Sorts the colors by their distance to a yellow-orange hue. (90°)
-  ///
-  /// __Note:__ To sort colors by their hue from yellow-orange going in a single
-  /// direction around the color wheel, use `sortByHue(90)`.
-  yellowOrange,
-
-  /// Sorts the colors by their distance to a yellow hue. (120°)
-  ///
-  /// __Note:__ To sort colors by their hue from yellow going in a single
-  /// direction around the color wheel, use `sortByHue(120)`.
-  yellow,
-
-  /// Sorts the colors by their distance to a yellow-green hue. (150°)
-  ///
-  /// __Note:__ To sort colors by their hue from yellow-green going in a single
-  /// direction around the color wheel, use `sortByHue(150)`.
-  yellowGreen,
-
-  /// Sorts the colors by their distance to a green hue. (180°)
-  ///
-  /// __Note:__ To sort colors by their hue from green going in a single
-  /// direction around the color wheel, use `sortByHue(180)`.
-  green,
-
-  /// Sorts the colors by their distance to a cyan hue. (210°)
-  ///
-  /// __Note:__ To sort colors by their hue from cyan going in a single
-  /// direction around the color wheel, use `sortByHue(210)`.
-  cyan,
-
-  /// Sorts the colors by their distance to a blue hue. (240°)
-  ///
-  /// __Note:__ To sort colors by their hue from blue going in a single
-  /// direction around the color wheel, use `sortByHue(240)`.
-  blue,
-
-  /// Sorts the colors by their distance to a blue-violet hue. (270°)
-  ///
-  /// __Note:__ To sort colors by their hue from blue-violet going in a single
-  /// direction around the color wheel, use `sortByHue(270)`.
-  blueViolet,
-
-  /// Sorts the colors by their distance to a violet hue. (300°)
-  ///
-  /// __Note:__ To sort colors by their hue from violet going in a single
-  /// direction around the color wheel, use `sortByHue(300)`.
-  violet,
-
-  /// Sorts the colors by their distance to a magenta hue. (330°)
-  ///
-  /// __Note:__ To sort colors by their hue from magenta going in a single
-  /// direction around the color wheel, use `sortByHue(330)`.
-  magenta,
-
-  /// Sorts the colors from the first color in the palette in the order
-  /// of the values closest to the previous colors' values.
-  similarity,
-
-  /// Sorts the colors from the first color in the palette in the order
-  /// of the values furthest to the previous colors' values.
-  difference,
-}
-
-/// Directions around a color wheel from a starting point.
-///
-/// Used by [ColorPalette]'s [sortByHue] method.
-enum ColorSortingDirection {
-  /// Sort hues clockwise from the starting point.
-  clockwise,
-
-  /// Sort hues counter-clockwise from the starting point.
-  counterClockwise,
-}
-
 /// A color palette made of a [List] of [ColorModel]s.
 ///
 /// Has constructors for generating new color palettes, as well as methods
@@ -152,6 +16,427 @@ class ColorPalette {
   /// [colors] contains all of the colors in the palette, it must not be `null`,
   /// but it may be empty.
   const ColorPalette(this.colors);
+
+  /// Returns a [ColorPalette] with an empty list of [colors].
+  factory ColorPalette.empty({bool unique = false}) {
+    return ColorPalette(unique ? UniqueList<ColorModel>() : <ColorModel>[]);
+  }
+
+  /// Generates a [ColorPalette] by selecting colors with hues
+  /// to both sides of [seed]'s hue value.
+  ///
+  /// If [numberOfColors] is odd, [seed] will be included in the palette.
+  /// If even, [seed] will be excluded from the palette. [numberOfColors]
+  /// defaults to `5`, must be `> 0`, and must not be `null`.
+  ///
+  /// [distance] is the base spacing between the selected colors' hue values.
+  /// [distance] defaults to `30` degrees and must not be `null`.
+  ///
+  /// [hueVariability], [saturationVariability], and [brightnessVariability],
+  /// if `> 0`, add a degree of randomness to the selected color's hue,
+  /// saturation, and brightness values, respectively.
+  ///
+  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
+  /// and must not be `null`.
+  ///
+  /// [saturationVariability] and [brightnessVariability] both default to `0`,
+  /// must be `>= 0 && <= 100`, and must not be `null`.
+  ///
+  /// If [perceivedBrightness] is `true`, colors will be generated in the
+  /// HSP color space. If `false`, colors will be generated in the HSB
+  /// color space.
+  ///
+  /// If [growable] is `false`, the palette will be constructed with a
+  /// fixed-length list, [numberOfColors] in length. If `true`, a growable
+  /// palette will be constructed instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [uniqueList] will be used instead, requiring all colors
+  /// in the palette be unique.
+  factory ColorPalette.adjacent(
+    ColorModel seed, {
+    int numberOfColors = 5,
+    num distance = 30,
+    num hueVariability = 0,
+    num saturationVariability = 0,
+    num brightnessVariability = 0,
+    bool perceivedBrightness = true,
+    bool growable = true,
+    bool unique = false,
+  }) {
+    assert(numberOfColors > 0);
+    assert(hueVariability >= 0 && hueVariability <= 360);
+    assert(saturationVariability >= 0 && saturationVariability <= 100);
+    assert(brightnessVariability >= 0 && brightnessVariability <= 100);
+
+    final palette = <ColorModel>[];
+
+    var colorsRemaining = numberOfColors;
+    if (numberOfColors.isOdd) {
+      palette.add(seed);
+      colorsRemaining -= 1;
+    }
+
+    for (var i = 1; i <= colorsRemaining; i++) {
+      final color = _generateColor(
+        seed,
+        (i % 2 == 0 ? distance * -1 : distance) * ((i / 2).ceil()),
+        hueVariability,
+        saturationVariability,
+        brightnessVariability,
+        perceivedBrightness,
+      );
+
+      palette.add(color);
+    }
+
+    return ColorPalette(unique
+        ? UniqueList<ColorModel>.from(palette, growable: growable)
+        : List<ColorModel>.from(palette, growable: growable));
+  }
+
+  /// Generates a [ColorPalette] by selecting colors with hues
+  /// evenly spaced around the color wheel from [seed].
+  ///
+  /// [numberOfColors] defaults to `5`, must be `> 0` and must
+  /// not be `null`.
+  ///
+  /// [hueVariability], [saturationVariability], and [brightnessVariability],
+  /// if `> 0`, add a degree of randomness to the selected color's hue,
+  /// saturation, and brightness values, respectively.
+  ///
+  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
+  /// and must not be `null`.
+  ///
+  /// [saturationVariability] and [brightnessVariability] both default to `0`,
+  /// must be `>= 0 && <= 100`, and must not be `null`.
+  ///
+  /// If [perceivedBrightness] is `true`, colors will be generated in the
+  /// HSP color space. If `false`, colors will be generated in the HSB
+  /// color space.
+  ///
+  /// If [clockwise] is `false`, colors will be generated in a clockwise
+  /// order around the color wheel. If `true`, colors will be generated in a
+  /// counter-clockwise order. [clockwise] must not be `null`.
+  ///
+  /// If [growable] is `false`, a fixed-length the palette will be constructed
+  /// with a fixed-length list. If `true`, a growable list will be used instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [uniqueList] will be used instead.
+  factory ColorPalette.polyad(
+    ColorModel seed, {
+    int numberOfColors = 5,
+    num hueVariability = 0,
+    num saturationVariability = 0,
+    num brightnessVariability = 0,
+    bool perceivedBrightness = true,
+    bool clockwise = true,
+    bool growable = true,
+    bool unique = false,
+  }) {
+    assert(numberOfColors > 0);
+    assert(hueVariability >= 0 && hueVariability <= 360);
+    assert(saturationVariability >= 0 && saturationVariability <= 100);
+    assert(brightnessVariability >= 0 && brightnessVariability <= 100);
+
+    final palette = <ColorModel>[seed];
+
+    var distance = 360 / numberOfColors;
+    if (!clockwise) distance *= -1;
+
+    for (var i = 1; i < numberOfColors; i++) {
+      final color = _generateColor(
+        seed,
+        distance * i,
+        hueVariability,
+        saturationVariability,
+        brightnessVariability,
+        perceivedBrightness,
+      );
+
+      palette.add(color);
+    }
+
+    return ColorPalette(unique
+        ? UniqueList<ColorModel>.from(palette, growable: growable)
+        : List<ColorModel>.from(palette, growable: growable));
+  }
+
+  /// Generates a [ColorPalette] with [numberOfColors] at random, constrained
+  /// within the specified hue, saturation, and brightness ranges.
+  ///
+  /// [colorSpace] defines the color space colors will be generated and
+  /// returned in. [colorSpace] defaults to [ColorSpace.rgb] and must not
+  /// be `null`.
+  ///
+  /// [minHue] and [maxHue] are used to set the range of hues that will be
+  /// selected from. If `minHue < maxHue`, the range will run in a clockwise
+  /// direction between the two, however if `minHue > maxHue`, the range will
+  /// run in a counter-clockwise direction. Both [minHue] and [maxHue] must
+  /// be `>= 0 && <= 360` and must not be `null`.
+  ///
+  /// [minSaturation] and [maxSaturation] are used to set the range of the
+  /// generated colors' saturation values. [minSaturation] must be
+  /// `<= maxSaturation` and [maxSaturation] must be `>= minSaturation`.
+  /// Both [minSaturation] and [maxSaturation] must be `>= 0 && <= 100`.
+  ///
+  /// [minBrightness] and [maxBrightness] are used to set the range of the
+  /// generated colors' brightness values. [minBrightness] must be
+  /// `<= maxBrightness` and [maxBrightness] must be `>= minBrightness`.
+  /// Both [minBrightness] and [maxBrightness] must be `>= 0 && <= 100`.
+  ///
+  /// If [perceivedBrightness] is `true`, colors will be generated in the
+  /// HSP color space. If `false`, colors will be generated in the HSB
+  /// color space.
+  ///
+  /// If [distributeHues] is `true`, the generated colors will be spread
+  /// evenly across the range of hues allowed for. [distributeHues] must
+  /// not be `null`.
+  ///
+  /// [distributionVariability] will add a degree of randomness to the selected
+  /// hues, if [distributeHues] is `true`. If `null`, [distributionVariability]
+  /// defaults to `(minHue - maxHue).abs() / numberOfColors / 4`. To allow for
+  /// no variability at all, [distributionVariability] must be set to `0`.
+  ///
+  /// If [clockwise] is `false`, colors will be generated in a clockwise
+  /// order around the color wheel. If `true`, colors will be generated in a
+  /// counter-clockwise order. [clockwise] will have no effect if
+  /// [distributeHues] is `false`. [clockwise] must not be `null`.
+  ///
+  /// If [growable] is `false`, a fixed-length the palette will be constructed
+  /// with a fixed-length list. If `true`, a growable list will be used instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [uniqueList] will be used instead.
+  factory ColorPalette.random(
+    int numberOfColors, {
+    ColorSpace colorSpace = ColorSpace.rgb,
+    num minHue = 0,
+    num maxHue = 360,
+    num minSaturation = 0,
+    num maxSaturation = 100,
+    num minBrightness = 0,
+    num maxBrightness = 100,
+    bool perceivedBrightness = true,
+    bool distributeHues = true,
+    num? distributionVariability,
+    bool clockwise = true,
+    bool growable = true,
+    bool unique = false,
+  }) {
+    assert(numberOfColors > 0);
+    assert(minHue >= 0 && minHue <= 360);
+    assert(maxHue >= 0 && maxHue <= 360);
+    assert(minSaturation >= 0 && minSaturation <= maxSaturation);
+    assert(maxSaturation >= minSaturation && maxSaturation <= 100);
+    assert(minBrightness >= 0 && minBrightness <= maxBrightness);
+    assert(maxBrightness >= minBrightness && maxBrightness <= 100);
+
+    if (!distributeHues &&
+        (minHue == 0 && maxHue == 360) &&
+        (minSaturation == 0 && maxSaturation == 100) &&
+        (minBrightness == 0 && maxBrightness == 100)) {
+      final generator = (_) {
+        ColorModel color;
+
+        switch (colorSpace) {
+          case ColorSpace.cmyk:
+            color = CmykColor.random();
+            break;
+          case ColorSpace.hsi:
+            color = HsiColor.random();
+            break;
+          case ColorSpace.hsl:
+            color = HslColor.random();
+            break;
+          case ColorSpace.hsp:
+            color = HspColor.random();
+            break;
+          case ColorSpace.hsb:
+            color = HsbColor.random();
+            break;
+          case ColorSpace.lab:
+            color = LabColor.random();
+            break;
+          case ColorSpace.oklab:
+            color = OklabColor.random();
+            break;
+          case ColorSpace.rgb:
+            color = RgbColor.random();
+            break;
+          case ColorSpace.xyz:
+            color = XyzColor.random();
+            break;
+        }
+
+        return color;
+      };
+
+      return ColorPalette(unique
+          ? UniqueList<ColorModel>.generate(numberOfColors, generator,
+              growable: growable, strict: true)
+          : List<ColorModel>.generate(numberOfColors, generator,
+              growable: growable));
+    }
+
+    var distance = (minHue - maxHue) / numberOfColors;
+    if (!clockwise) distance *= -1;
+
+    distributionVariability ??= distance.abs() / 4;
+    final variabilityRadius = distributionVariability / 2;
+
+    final seed = _generateRandomColor(
+      colorSpace,
+      minHue,
+      maxHue,
+      minSaturation,
+      maxSaturation,
+      minBrightness,
+      maxBrightness,
+      perceivedBrightness,
+    );
+
+    final palette = <ColorModel>[seed];
+
+    var hue = palette.first.hue;
+
+    for (var i = 1; i < numberOfColors; i++) {
+      hue += distance;
+      minHue = (hue - variabilityRadius) % 360;
+      maxHue = (hue + variabilityRadius) % 360;
+
+      final color = _generateRandomColor(
+        colorSpace,
+        minHue,
+        maxHue,
+        minSaturation,
+        maxSaturation,
+        minBrightness,
+        maxBrightness,
+        perceivedBrightness,
+      );
+
+      palette.add(color);
+    }
+
+    return ColorPalette(unique
+        ? UniqueList<ColorModel>.from(palette, growable: growable)
+        : List<ColorModel>.from(palette, growable: growable));
+  }
+
+  /// Generates a [ColorPalette] by selecting colors to both sides
+  /// of the color with the opposite [hue] of [seed].
+  ///
+  /// If [numberOfColors] is even, the coolor opposite of [seed] will
+  /// be included in the palette. If odd, the opposite color will be
+  /// excluded from the palette. [numberOfColors] defaults to `3`, must
+  /// be `> 0`, and must not be `null`.
+  ///
+  /// [distance] is the base spacing between the selected colors' hue values.
+  /// [distance] defaults to `30` degrees and must not be `null`.
+  ///
+  /// [hueVariability], [saturationVariability], and [brightnessVariability],
+  /// if `> 0`, add a degree of randomness to the selected color's hue,
+  /// saturation, and brightness (HSB's value) values, respectively.
+  ///
+  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
+  /// and must not be `null`.
+  ///
+  /// [saturationVariability] and [brightnessVariability] both default to `0`,
+  /// must be `>= 0 && <= 100`, and must not be `null`.
+  ///
+  /// If [perceivedBrightness] is `true`, colors will be generated in the
+  /// HSP color space. If `false`, colors will be generated in the HSB
+  /// color space.
+  ///
+  /// If [growable] is `false`, a fixed-length the palette will be constructed
+  /// with a fixed-length list. If `true`, a growable list will be used instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [uniqueList] will be used instead.
+  factory ColorPalette.splitComplimentary(
+    ColorModel seed, {
+    int numberOfColors = 3,
+    num distance = 30,
+    num hueVariability = 0,
+    num saturationVariability = 0,
+    num brightnessVariability = 0,
+    bool perceivedBrightness = true,
+    bool growable = true,
+    bool unique = false,
+  }) {
+    assert(numberOfColors > 0);
+    assert(hueVariability >= 0 && hueVariability <= 360);
+    assert(saturationVariability >= 0 && saturationVariability <= 100);
+    assert(brightnessVariability >= 0 && brightnessVariability <= 100);
+
+    final palette = <ColorModel>[seed];
+
+    final oppositeColor = seed.opposite;
+    var colorsRemaining = numberOfColors;
+
+    if (numberOfColors.isEven) {
+      palette.add(oppositeColor);
+      colorsRemaining -= 1;
+    }
+
+    for (var i = 1; i < colorsRemaining; i++) {
+      final color = _generateColor(
+        oppositeColor,
+        (i % 2 == 0 ? distance * -1 : distance) * ((i / 2).ceil()),
+        hueVariability,
+        saturationVariability,
+        brightnessVariability,
+        perceivedBrightness,
+      );
+
+      palette.add(color);
+    }
+
+    return ColorPalette(unique
+        ? UniqueList<ColorModel>.from(palette, growable: growable)
+        : List<ColorModel>.from(palette, growable: growable));
+  }
+
+  /// Generates a [ColorPalette] from [colorPalette] by appending or
+  /// inserting the opposite colors of every color in [colorPalette].
+  ///
+  /// __Note:__ Use the [opposite] methods to flip every color in a
+  /// palette to their respective opposites without preserving the
+  /// original colors.
+  ///
+  /// [colorPalette] must not be `null`.
+  ///
+  /// If [insertOpposites] is `true`, the generated colors will be inserted
+  /// into the list of colors after their respective base colors. If `false`,
+  /// the generated colors will be appended to the end of the list.
+  /// [insertOpposites] defaults to `true` and must not be `null`.
+  ///
+  /// If [growable] is `false`, a fixed-length the palette will be constructed
+  /// with a fixed-length list. If `true`, a growable list will be used instead.
+  ///
+  /// If [unique] is `false`, the palette will be constructed with a [List].
+  /// If `true`, a [uniqueList] will be used instead.
+  factory ColorPalette.opposites(
+    ColorPalette colorPalette, {
+    bool insertOpposites = true,
+    bool growable = true,
+    bool unique = false,
+  }) {
+    final palette = <ColorModel>[];
+    if (!insertOpposites) palette.addAll(colorPalette.colors);
+
+    for (var i = 0; i < colorPalette.length; i++) {
+      final color = colorPalette[i];
+      if (insertOpposites) palette.add(color);
+      palette.add(color.opposite);
+    }
+
+    return ColorPalette(unique
+        ? UniqueList<ColorModel>.from(palette, growable: growable)
+        : List<ColorModel>.from(palette, growable: growable));
+  }
 
   /// The colors contained in the palette.
   final List<ColorModel> colors;
@@ -686,427 +971,6 @@ class ColorPalette {
     });
   }
 
-  /// Returns a [ColorPalette] with an empty list of [colors].
-  factory ColorPalette.empty({bool unique = false}) {
-    return ColorPalette(unique ? UniqueList<ColorModel>() : <ColorModel>[]);
-  }
-
-  /// Generates a [ColorPalette] by selecting colors with hues
-  /// to both sides of [seed]'s hue value.
-  ///
-  /// If [numberOfColors] is odd, [seed] will be included in the palette.
-  /// If even, [seed] will be excluded from the palette. [numberOfColors]
-  /// defaults to `5`, must be `> 0`, and must not be `null`.
-  ///
-  /// [distance] is the base spacing between the selected colors' hue values.
-  /// [distance] defaults to `30` degrees and must not be `null`.
-  ///
-  /// [hueVariability], [saturationVariability], and [brightnessVariability],
-  /// if `> 0`, add a degree of randomness to the selected color's hue,
-  /// saturation, and brightness values, respectively.
-  ///
-  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
-  /// and must not be `null`.
-  ///
-  /// [saturationVariability] and [brightnessVariability] both default to `0`,
-  /// must be `>= 0 && <= 100`, and must not be `null`.
-  ///
-  /// If [perceivedBrightness] is `true`, colors will be generated in the
-  /// HSP color space. If `false`, colors will be generated in the HSB
-  /// color space.
-  ///
-  /// If [growable] is `false`, the palette will be constructed with a
-  /// fixed-length list, [numberOfColors] in length. If `true`, a growable
-  /// palette will be constructed instead.
-  ///
-  /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [uniqueList] will be used instead, requiring all colors
-  /// in the palette be unique.
-  factory ColorPalette.adjacent(
-    ColorModel seed, {
-    int numberOfColors = 5,
-    num distance = 30,
-    num hueVariability = 0,
-    num saturationVariability = 0,
-    num brightnessVariability = 0,
-    bool perceivedBrightness = true,
-    bool growable = true,
-    bool unique = false,
-  }) {
-    assert(numberOfColors > 0);
-    assert(hueVariability >= 0 && hueVariability <= 360);
-    assert(saturationVariability >= 0 && saturationVariability <= 100);
-    assert(brightnessVariability >= 0 && brightnessVariability <= 100);
-
-    final palette = <ColorModel>[];
-
-    var colorsRemaining = numberOfColors;
-    if (numberOfColors.isOdd) {
-      palette.add(seed);
-      colorsRemaining -= 1;
-    }
-
-    for (var i = 1; i <= colorsRemaining; i++) {
-      final color = _generateColor(
-        seed,
-        (i % 2 == 0 ? distance * -1 : distance) * ((i / 2).ceil()),
-        hueVariability,
-        saturationVariability,
-        brightnessVariability,
-        perceivedBrightness,
-      );
-
-      palette.add(color);
-    }
-
-    return ColorPalette(unique
-        ? UniqueList<ColorModel>.from(palette, growable: growable)
-        : List<ColorModel>.from(palette, growable: growable));
-  }
-
-  /// Generates a [ColorPalette] by selecting colors with hues
-  /// evenly spaced around the color wheel from [seed].
-  ///
-  /// [numberOfColors] defaults to `5`, must be `> 0` and must
-  /// not be `null`.
-  ///
-  /// [hueVariability], [saturationVariability], and [brightnessVariability],
-  /// if `> 0`, add a degree of randomness to the selected color's hue,
-  /// saturation, and brightness values, respectively.
-  ///
-  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
-  /// and must not be `null`.
-  ///
-  /// [saturationVariability] and [brightnessVariability] both default to `0`,
-  /// must be `>= 0 && <= 100`, and must not be `null`.
-  ///
-  /// If [perceivedBrightness] is `true`, colors will be generated in the
-  /// HSP color space. If `false`, colors will be generated in the HSB
-  /// color space.
-  ///
-  /// If [clockwise] is `false`, colors will be generated in a clockwise
-  /// order around the color wheel. If `true`, colors will be generated in a
-  /// counter-clockwise order. [clockwise] must not be `null`.
-  ///
-  /// If [growable] is `false`, a fixed-length the palette will be constructed
-  /// with a fixed-length list. If `true`, a growable list will be used instead.
-  ///
-  /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [uniqueList] will be used instead.
-  factory ColorPalette.polyad(
-    ColorModel seed, {
-    int numberOfColors = 5,
-    num hueVariability = 0,
-    num saturationVariability = 0,
-    num brightnessVariability = 0,
-    bool perceivedBrightness = true,
-    bool clockwise = true,
-    bool growable = true,
-    bool unique = false,
-  }) {
-    assert(numberOfColors > 0);
-    assert(hueVariability >= 0 && hueVariability <= 360);
-    assert(saturationVariability >= 0 && saturationVariability <= 100);
-    assert(brightnessVariability >= 0 && brightnessVariability <= 100);
-
-    final palette = <ColorModel>[seed];
-
-    var distance = 360 / numberOfColors;
-    if (!clockwise) distance *= -1;
-
-    for (var i = 1; i < numberOfColors; i++) {
-      final color = _generateColor(
-        seed,
-        distance * i,
-        hueVariability,
-        saturationVariability,
-        brightnessVariability,
-        perceivedBrightness,
-      );
-
-      palette.add(color);
-    }
-
-    return ColorPalette(unique
-        ? UniqueList<ColorModel>.from(palette, growable: growable)
-        : List<ColorModel>.from(palette, growable: growable));
-  }
-
-  /// Generates a [ColorPalette] with [numberOfColors] at random, constrained
-  /// within the specified hue, saturation, and brightness ranges.
-  ///
-  /// [colorSpace] defines the color space colors will be generated and
-  /// returned in. [colorSpace] defaults to [ColorSpace.rgb] and must not
-  /// be `null`.
-  ///
-  /// [minHue] and [maxHue] are used to set the range of hues that will be
-  /// selected from. If `minHue < maxHue`, the range will run in a clockwise
-  /// direction between the two, however if `minHue > maxHue`, the range will
-  /// run in a counter-clockwise direction. Both [minHue] and [maxHue] must
-  /// be `>= 0 && <= 360` and must not be `null`.
-  ///
-  /// [minSaturation] and [maxSaturation] are used to set the range of the
-  /// generated colors' saturation values. [minSaturation] must be
-  /// `<= maxSaturation` and [maxSaturation] must be `>= minSaturation`.
-  /// Both [minSaturation] and [maxSaturation] must be `>= 0 && <= 100`.
-  ///
-  /// [minBrightness] and [maxBrightness] are used to set the range of the
-  /// generated colors' brightness values. [minBrightness] must be
-  /// `<= maxBrightness` and [maxBrightness] must be `>= minBrightness`.
-  /// Both [minBrightness] and [maxBrightness] must be `>= 0 && <= 100`.
-  ///
-  /// If [perceivedBrightness] is `true`, colors will be generated in the
-  /// HSP color space. If `false`, colors will be generated in the HSB
-  /// color space.
-  ///
-  /// If [distributeHues] is `true`, the generated colors will be spread
-  /// evenly across the range of hues allowed for. [distributeHues] must
-  /// not be `null`.
-  ///
-  /// [distributionVariability] will add a degree of randomness to the selected
-  /// hues, if [distributeHues] is `true`. If `null`, [distributionVariability]
-  /// defaults to `(minHue - maxHue).abs() / numberOfColors / 4`. To allow for
-  /// no variability at all, [distributionVariability] must be set to `0`.
-  ///
-  /// If [clockwise] is `false`, colors will be generated in a clockwise
-  /// order around the color wheel. If `true`, colors will be generated in a
-  /// counter-clockwise order. [clockwise] will have no effect if
-  /// [distributeHues] is `false`. [clockwise] must not be `null`.
-  ///
-  /// If [growable] is `false`, a fixed-length the palette will be constructed
-  /// with a fixed-length list. If `true`, a growable list will be used instead.
-  ///
-  /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [uniqueList] will be used instead.
-  factory ColorPalette.random(
-    int numberOfColors, {
-    ColorSpace colorSpace = ColorSpace.rgb,
-    num minHue = 0,
-    num maxHue = 360,
-    num minSaturation = 0,
-    num maxSaturation = 100,
-    num minBrightness = 0,
-    num maxBrightness = 100,
-    bool perceivedBrightness = true,
-    bool distributeHues = true,
-    num? distributionVariability,
-    bool clockwise = true,
-    bool growable = true,
-    bool unique = false,
-  }) {
-    assert(numberOfColors > 0);
-    assert(minHue >= 0 && minHue <= 360);
-    assert(maxHue >= 0 && maxHue <= 360);
-    assert(minSaturation >= 0 && minSaturation <= maxSaturation);
-    assert(maxSaturation >= minSaturation && maxSaturation <= 100);
-    assert(minBrightness >= 0 && minBrightness <= maxBrightness);
-    assert(maxBrightness >= minBrightness && maxBrightness <= 100);
-
-    if (!distributeHues &&
-        (minHue == 0 && maxHue == 360) &&
-        (minSaturation == 0 && maxSaturation == 100) &&
-        (minBrightness == 0 && maxBrightness == 100)) {
-      final generator = (_) {
-        ColorModel color;
-
-        switch (colorSpace) {
-          case ColorSpace.cmyk:
-            color = CmykColor.random();
-            break;
-          case ColorSpace.hsi:
-            color = HsiColor.random();
-            break;
-          case ColorSpace.hsl:
-            color = HslColor.random();
-            break;
-          case ColorSpace.hsp:
-            color = HspColor.random();
-            break;
-          case ColorSpace.hsb:
-            color = HsbColor.random();
-            break;
-          case ColorSpace.lab:
-            color = LabColor.random();
-            break;
-          case ColorSpace.oklab:
-            color = OklabColor.random();
-            break;
-          case ColorSpace.rgb:
-            color = RgbColor.random();
-            break;
-          case ColorSpace.xyz:
-            color = XyzColor.random();
-            break;
-        }
-
-        return color;
-      };
-
-      return ColorPalette(unique
-          ? UniqueList<ColorModel>.generate(numberOfColors, generator,
-              growable: growable, strict: true)
-          : List<ColorModel>.generate(numberOfColors, generator,
-              growable: growable));
-    }
-
-    var distance = (minHue - maxHue) / numberOfColors;
-    if (!clockwise) distance *= -1;
-
-    distributionVariability ??= distance.abs() / 4;
-    final variabilityRadius = distributionVariability / 2;
-
-    final seed = _generateRandomColor(
-      colorSpace,
-      minHue,
-      maxHue,
-      minSaturation,
-      maxSaturation,
-      minBrightness,
-      maxBrightness,
-      perceivedBrightness,
-    );
-
-    final palette = <ColorModel>[seed];
-
-    var hue = palette.first.hue;
-
-    for (var i = 1; i < numberOfColors; i++) {
-      hue += distance;
-      minHue = (hue - variabilityRadius) % 360;
-      maxHue = (hue + variabilityRadius) % 360;
-
-      final color = _generateRandomColor(
-        colorSpace,
-        minHue,
-        maxHue,
-        minSaturation,
-        maxSaturation,
-        minBrightness,
-        maxBrightness,
-        perceivedBrightness,
-      );
-
-      palette.add(color);
-    }
-
-    return ColorPalette(unique
-        ? UniqueList<ColorModel>.from(palette, growable: growable)
-        : List<ColorModel>.from(palette, growable: growable));
-  }
-
-  /// Generates a [ColorPalette] by selecting colors to both sides
-  /// of the color with the opposite [hue] of [seed].
-  ///
-  /// If [numberOfColors] is even, the coolor opposite of [seed] will
-  /// be included in the palette. If odd, the opposite color will be
-  /// excluded from the palette. [numberOfColors] defaults to `3`, must
-  /// be `> 0`, and must not be `null`.
-  ///
-  /// [distance] is the base spacing between the selected colors' hue values.
-  /// [distance] defaults to `30` degrees and must not be `null`.
-  ///
-  /// [hueVariability], [saturationVariability], and [brightnessVariability],
-  /// if `> 0`, add a degree of randomness to the selected color's hue,
-  /// saturation, and brightness (HSB's value) values, respectively.
-  ///
-  /// [hueVariability] defaults to `0`, must be `>= 0 && <= 360`,
-  /// and must not be `null`.
-  ///
-  /// [saturationVariability] and [brightnessVariability] both default to `0`,
-  /// must be `>= 0 && <= 100`, and must not be `null`.
-  ///
-  /// If [perceivedBrightness] is `true`, colors will be generated in the
-  /// HSP color space. If `false`, colors will be generated in the HSB
-  /// color space.
-  ///
-  /// If [growable] is `false`, a fixed-length the palette will be constructed
-  /// with a fixed-length list. If `true`, a growable list will be used instead.
-  ///
-  /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [uniqueList] will be used instead.
-  factory ColorPalette.splitComplimentary(
-    ColorModel seed, {
-    int numberOfColors = 3,
-    num distance = 30,
-    num hueVariability = 0,
-    num saturationVariability = 0,
-    num brightnessVariability = 0,
-    bool perceivedBrightness = true,
-    bool growable = true,
-    bool unique = false,
-  }) {
-    assert(numberOfColors > 0);
-    assert(hueVariability >= 0 && hueVariability <= 360);
-    assert(saturationVariability >= 0 && saturationVariability <= 100);
-    assert(brightnessVariability >= 0 && brightnessVariability <= 100);
-
-    final palette = <ColorModel>[seed];
-
-    final oppositeColor = seed.opposite;
-    var colorsRemaining = numberOfColors;
-
-    if (numberOfColors.isEven) {
-      palette.add(oppositeColor);
-      colorsRemaining -= 1;
-    }
-
-    for (var i = 1; i < colorsRemaining; i++) {
-      final color = _generateColor(
-        oppositeColor,
-        (i % 2 == 0 ? distance * -1 : distance) * ((i / 2).ceil()),
-        hueVariability,
-        saturationVariability,
-        brightnessVariability,
-        perceivedBrightness,
-      );
-
-      palette.add(color);
-    }
-
-    return ColorPalette(unique
-        ? UniqueList<ColorModel>.from(palette, growable: growable)
-        : List<ColorModel>.from(palette, growable: growable));
-  }
-
-  /// Generates a [ColorPalette] from [colorPalette] by appending or
-  /// inserting the opposite colors of every color in [colorPalette].
-  ///
-  /// __Note:__ Use the [opposite] methods to flip every color in a
-  /// palette to their respective opposites without preserving the
-  /// original colors.
-  ///
-  /// [colorPalette] must not be `null`.
-  ///
-  /// If [insertOpposites] is `true`, the generated colors will be inserted
-  /// into the list of colors after their respective base colors. If `false`,
-  /// the generated colors will be appended to the end of the list.
-  /// [insertOpposites] defaults to `true` and must not be `null`.
-  ///
-  /// If [growable] is `false`, a fixed-length the palette will be constructed
-  /// with a fixed-length list. If `true`, a growable list will be used instead.
-  ///
-  /// If [unique] is `false`, the palette will be constructed with a [List].
-  /// If `true`, a [uniqueList] will be used instead.
-  factory ColorPalette.opposites(
-    ColorPalette colorPalette, {
-    bool insertOpposites = true,
-    bool growable = true,
-    bool unique = false,
-  }) {
-    final palette = <ColorModel>[];
-    if (!insertOpposites) palette.addAll(colorPalette.colors);
-
-    for (var i = 0; i < colorPalette.length; i++) {
-      final color = colorPalette[i];
-      if (insertOpposites) palette.add(color);
-      palette.add(color.opposite);
-    }
-
-    return ColorPalette(unique
-        ? UniqueList<ColorModel>.from(palette, growable: growable)
-        : List<ColorModel>.from(palette, growable: growable));
-  }
-
   /// Generates a new color in the color space defined by [colorModel].
   static ColorModel _generateColor(
     ColorModel seed,
@@ -1274,6 +1138,142 @@ extension _ClosestFurthest on List<ColorModel> {
 
     return furthestColor;
   }
+}
+
+/// The properties of a color that can be used for sorting.
+///
+/// Used by [ColorPalette]'s [sortBy] method.
+enum ColorSortingProperty {
+  /// Sorts the colors in the palette from the highest
+  /// perceived brightness value to the lowest.
+  brightest,
+
+  /// Sorts the colors in the palette from the lowest
+  /// perceived brightness value to the highest.
+  dimmest,
+
+  /// Sorts the colors in the palette from the highest
+  /// lightness value to the lowest.
+  lightest,
+
+  /// Sorts the colors in the palette from the lowest
+  /// lightness value to the highest.
+  darkest,
+
+  /// Sorts the colors in the palette from the highest
+  /// intensity value to the lowest.
+  mostIntense,
+
+  /// Sorts the colors in the palette from the lowest
+  /// intensity value to the highest.
+  leastIntense,
+
+  /// Sorts the colors in the palette from the highest
+  /// saturation value to the lowest.
+  deepest,
+
+  /// Sorts the colors in the palette from the lowest
+  /// saturation value to the highest.
+  dullest,
+
+  /// Sorts the colors in the palette from the highest combined
+  /// saturation and brightness values to the lowest.
+  richest,
+
+  /// Sorts the colors in the palette from the lowest combined
+  /// saturation and brightness values to the highest.
+  muted,
+
+  /// Sorts the colors by their distance to a red hue. (0°)
+  ///
+  /// __Note:__ To sort colors by their hue from red going in a single
+  /// direction around the color wheel, use `sortByHue(0)`.
+  red,
+
+  /// Sorts the colors by their distance to a red-orange hue. (30°)
+  ///
+  /// __Note:__ To sort colors by their hue from red-orange going in a single
+  /// direction around the color wheel, use `sortByHue(30)`.
+  redOrange,
+
+  /// Sorts the colors by their distance to a orange hue. (60°)
+  ///
+  /// __Note:__ To sort colors by their hue from orange going in a single
+  /// direction around the color wheel, use `sortByHue(60)`.
+  orange,
+
+  /// Sorts the colors by their distance to a yellow-orange hue. (90°)
+  ///
+  /// __Note:__ To sort colors by their hue from yellow-orange going in a single
+  /// direction around the color wheel, use `sortByHue(90)`.
+  yellowOrange,
+
+  /// Sorts the colors by their distance to a yellow hue. (120°)
+  ///
+  /// __Note:__ To sort colors by their hue from yellow going in a single
+  /// direction around the color wheel, use `sortByHue(120)`.
+  yellow,
+
+  /// Sorts the colors by their distance to a yellow-green hue. (150°)
+  ///
+  /// __Note:__ To sort colors by their hue from yellow-green going in a single
+  /// direction around the color wheel, use `sortByHue(150)`.
+  yellowGreen,
+
+  /// Sorts the colors by their distance to a green hue. (180°)
+  ///
+  /// __Note:__ To sort colors by their hue from green going in a single
+  /// direction around the color wheel, use `sortByHue(180)`.
+  green,
+
+  /// Sorts the colors by their distance to a cyan hue. (210°)
+  ///
+  /// __Note:__ To sort colors by their hue from cyan going in a single
+  /// direction around the color wheel, use `sortByHue(210)`.
+  cyan,
+
+  /// Sorts the colors by their distance to a blue hue. (240°)
+  ///
+  /// __Note:__ To sort colors by their hue from blue going in a single
+  /// direction around the color wheel, use `sortByHue(240)`.
+  blue,
+
+  /// Sorts the colors by their distance to a blue-violet hue. (270°)
+  ///
+  /// __Note:__ To sort colors by their hue from blue-violet going in a single
+  /// direction around the color wheel, use `sortByHue(270)`.
+  blueViolet,
+
+  /// Sorts the colors by their distance to a violet hue. (300°)
+  ///
+  /// __Note:__ To sort colors by their hue from violet going in a single
+  /// direction around the color wheel, use `sortByHue(300)`.
+  violet,
+
+  /// Sorts the colors by their distance to a magenta hue. (330°)
+  ///
+  /// __Note:__ To sort colors by their hue from magenta going in a single
+  /// direction around the color wheel, use `sortByHue(330)`.
+  magenta,
+
+  /// Sorts the colors from the first color in the palette in the order
+  /// of the values closest to the previous colors' values.
+  similarity,
+
+  /// Sorts the colors from the first color in the palette in the order
+  /// of the values furthest to the previous colors' values.
+  difference,
+}
+
+/// Directions around a color wheel from a starting point.
+///
+/// Used by [ColorPalette]'s [sortByHue] method.
+enum ColorSortingDirection {
+  /// Sort hues clockwise from the starting point.
+  clockwise,
+
+  /// Sort hues counter-clockwise from the starting point.
+  counterClockwise,
 }
 
 extension _CalculateDistance on num {
