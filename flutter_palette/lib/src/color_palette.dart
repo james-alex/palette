@@ -1,7 +1,7 @@
 import 'package:flutter/painting.dart' show Color;
+import 'package:color_models/color_models.dart' as cm;
 import 'package:flutter_color_models/flutter_color_models.dart';
 import 'package:palette/palette.dart' as cp;
-import 'package:palette/palette.dart' show ColorSpace;
 import 'package:unique_list/unique_list.dart';
 
 /// Contains a [List] of [ColorModel]s.
@@ -307,6 +307,9 @@ class ColorPalette extends cp.ColorPalette {
     return ColorPalette(this.colors + colors);
   }
 
+  @override
+  ColorModel operator [](int index) => colors[index];
+
   /// Casts the colors in [palette] from the [color_model] package's
   /// [ColorModel] class, to the [flutter_color_model] package's [ColorModel]
   /// class.
@@ -319,23 +322,23 @@ class ColorPalette extends cp.ColorPalette {
       late ColorModel castColor;
       final colorValues = color.toListWithAlpha();
 
-      if (color is cp.CmykColor) {
+      if (color is cm.CmykColor) {
         castColor = CmykColor.fromList(colorValues);
-      } else if (color is cp.HsbColor) {
+      } else if (color is cm.HsbColor) {
         castColor = HsbColor.fromList(colorValues);
-      } else if (color is cp.HsiColor) {
+      } else if (color is cm.HsiColor) {
         castColor = HsiColor.fromList(colorValues);
-      } else if (color is cp.HslColor) {
+      } else if (color is cm.HslColor) {
         castColor = HslColor.fromList(colorValues);
-      } else if (color is cp.HspColor) {
+      } else if (color is cm.HspColor) {
         castColor = HspColor.fromList(colorValues);
-      } else if (color is cp.LabColor) {
+      } else if (color is cm.LabColor) {
         castColor = LabColor.fromList(colorValues);
-      } else if (color is cp.OklabColor) {
+      } else if (color is cm.OklabColor) {
         castColor = OklabColor.fromList(colorValues.cast<double>());
-      } else if (color is cp.RgbColor) {
+      } else if (color is cm.RgbColor) {
         castColor = RgbColor.fromList(color.toPreciseListWithAlpha());
-      } else if (color is cp.XyzColor) {
+      } else if (color is cm.XyzColor) {
         castColor = XyzColor.fromList(colorValues);
       }
 
