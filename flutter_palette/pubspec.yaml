@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
   color_models: ^1.2.1
   flutter_color_models: ^1.2.1
-  palette: ^1.1.0
+  palette: ^1.1.0+1
   unique_list: ^1.0.0
 
 dev_dependencies:
