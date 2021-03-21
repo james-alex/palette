@@ -27,6 +27,9 @@ A [ColorPalette] can be created directly by constructing it with a list of
 [ColorPalette] has 7 factory constructors: [from], [empty], [adjacent], [polyad],
 [random], [splitComplimentary], and [opposites].
 
+__Note:__ As of `v1.1.0`, [ColorPalette] implements `List<Color>` and can used
+interchangeably with `List<Color>`s within Flutter.
+
 ```dart
 // Create a color palette with a set of pre-defined colors.
 ColorPalette(<ColorModel>[

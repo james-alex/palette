@@ -1,3 +1,7 @@
+## [1.1.0] - March 20, 2021
+
+* [ColorPalette] now implements `List<Color>`.
+
 ## [1.0.0] - March 17, 2021
 
 * Migrated to null-safe code.

@@ -24,6 +24,8 @@ A [ColorPalette] can be created directly by constructing it with a list of
 [ColorPalette] has 6 factory constructors: [empty], [adjacent], [polyad],
 [random], [splitComplimentary], and [opposites].
 
+__Note:__ As of `v1.1.0`, [ColorPalette] implements `List<ColorModel>`.
+
 ```dart
 // Create a color palette with a set of pre-defined colors.
 ColorPalette(<ColorModel>[
