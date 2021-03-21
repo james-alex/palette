@@ -3,6 +3,7 @@
 /// Oklab, RGB, and XYZ color spaces.
 library flutter_palette;
 
+export 'package:flutter_color_models/flutter_color_models.dart';
 export 'package:palette/palette.dart'
     show ColorSortingProperty, ColorSortingDirection;
 export 'src/color_palette.dart';

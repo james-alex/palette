@@ -1,5 +1,4 @@
 import 'dart:math' show Random;
-import 'package:color_models/color_models.dart';
 import 'package:palette/palette.dart';
 import 'package:test/test.dart';
 
