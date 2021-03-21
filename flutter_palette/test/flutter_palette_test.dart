@@ -937,6 +937,353 @@ void main() {
       }
     });
   });
+
+  group('List Utilities', () {
+    final colors = _testColors.sublist(3).toColorModels();
+    final colorPalette = ColorPalette(colors);
+
+    test('iterator', () {
+      final iteratorA = colorPalette.iterator;
+      final iteratorB = colors.iterator;
+      for (var color in colors) {
+        iteratorA.moveNext();
+        expect(iteratorA.current, equals(color));
+        iteratorB.moveNext();
+        expect(iteratorB.current, equals(color));
+      }
+    });
+
+    test('cast', () {
+      expect(colors.cast<RgbColor>(), equals(colorPalette.cast<RgbColor>()));
+    });
+
+    test('map', () {
+      expect(colors.map<CmykColor>((color) => color.toCmykColor()),
+          equals(colorPalette.map<CmykColor>((color) => color.toCmykColor())));
+    });
+
+    test('where', () {
+      for (var colorA in colors) {
+        final colorB = colorPalette.where((colorB) => colorA == colorB).first;
+        expect(colorB, equals(colorA));
+        final colorC = colors.where((colorC) => colorC == colorB).first;
+        expect(colorC, equals(colorB));
+      }
+    });
+
+    test('whereType', () {
+      expect(colors.whereType<RgbColor>(),
+          equals(colorPalette.whereType<RgbColor>()));
+    });
+
+    test('expand', () {
+      final colorSpaces = ColorSpace.values;
+      Iterable<ColorModel> expander(Color color) => colorSpaces
+          .map<ColorModel>((colorSpace) => colorSpace.fromColor(color));
+      expect(colors.expand<ColorModel>(expander),
+          equals(colorPalette.expand<ColorModel>(expander)));
+    });
+
+    test('forEach', () {
+      colorPalette.forEach((color) {
+        expect(colors.contains(color), equals(true));
+      });
+    });
+
+    test('reduce', () {
+      expect(
+        colors.reduce(
+            (a, b) => a.toColorModel().interpolate(b.toColorModel(), 0.5)),
+        equals(colorPalette.reduce(
+            (a, b) => a.toColorModel().interpolate(b.toColorModel(), 0.5))),
+      );
+    });
+
+    test('fold', () {
+      expect(
+        colors.fold<RgbColor>(colors.first as RgbColor,
+            (a, b) => a.interpolate(b.toColorModel(), 0.5)),
+        equals(colorPalette.fold<RgbColor>(colorPalette.first as RgbColor,
+            (a, b) => a.interpolate(b.toColorModel(), 0.5))),
+      );
+    });
+
+    test('every', () {
+      expect(
+          colors.every((color) => colorPalette.contains(color)), equals(true));
+      expect(
+          colorPalette.every((color) => colors.contains(color)), equals(true));
+    });
+
+    test('join', () {
+      expect(colors.join(','), equals(colorPalette.join(',')));
+    });
+
+    test('any', () {
+      expect(colors.any((color) => color == colorPalette.first), equals(true));
+      expect(colors.any((color) => color == colorPalette.last), equals(true));
+    });
+
+    test('toList', () {
+      expect(colors.toList(), equals(colorPalette.toList()));
+    });
+
+    test('toSet', () {
+      expect(colors.toSet(), equals(colorPalette.toSet()));
+    });
+
+    test('[]', () {
+      for (var i = 0; i < colors.length; i++) {
+        expect(colors[i], equals(colorPalette[i]));
+      }
+    });
+
+    test('[]=', () {
+      for (var i = 0; i < colors.length; i++) {
+        colorPalette[i] = colors[colors.length - 1 - i];
+      }
+      expect(colorPalette, equals(colors.reversed));
+      colorPalette.reverse();
+      expect(colorPalette, equals(colors));
+    });
+
+    test('length', () {
+      expect(colors.length, equals(colorPalette.length));
+      colorPalette.length = 6;
+      expect(colorPalette, equals(colors));
+    });
+
+    test('isEmpty', () {
+      expect(colors.isEmpty, equals(colorPalette.isEmpty));
+    });
+
+    test('isNotEmpty', () {
+      expect(colors.isNotEmpty, equals(colorPalette.isNotEmpty));
+    });
+
+    test('add', () {
+      expect(colors, equals(colorPalette));
+      colorPalette.add(RgbColor(240, 111, 12));
+      expect(colors.contains(RgbColor(240, 111, 12)), equals(true));
+    });
+
+    test('addAll', () {
+      expect(colors, equals(colorPalette));
+      final newColors = <ColorModel>[
+        RgbColor(102, 204, 51),
+        RgbColor(51, 204, 153),
+        RgbColor(12, 102, 153),
+        RgbColor(120, 42, 212),
+        RgbColor(209, 16, 110),
+      ];
+      colorPalette.addAll(newColors);
+      expect(colors.sublist(colors.length - 5), equals(newColors));
+    });
+
+    test('insert', () {
+      colorPalette.insert(2, RgbColor(0, 0, 0));
+      expect(colors[2], equals(RgbColor(0, 0, 0)));
+    });
+
+    test('insertAll', () {
+      final newColors = <ColorModel>[
+        RgbColor(144, 144, 144),
+        RgbColor(255, 255, 255),
+      ];
+      colorPalette.insertAll(2, newColors);
+      expect(colors.sublist(2, 4), equals(newColors));
+    });
+
+    test('setAll', () {
+      final newColors = ColorPalette.random(4);
+      colorPalette.setAll(8, newColors);
+      expect(newColors.every((color) => colors.contains(color)), equals(true));
+    });
+
+    test('setRange', () {
+      final newColors = ColorPalette.random(4);
+      colorPalette.setRange(8, 12, newColors);
+      expect(newColors.every((color) => colors.contains(color)), equals(true));
+    });
+
+    test('fillRange', () {
+      final color = RgbColor.random();
+      colorPalette.fillRange(8, 12, color);
+      expect(colors.contains(color), equals(true));
+    });
+
+    test('replaceRange', () {
+      final newColors = ColorPalette.random(4);
+      colorPalette.replaceRange(8, 12, newColors);
+      expect(newColors.every((color) => colors.contains(color)), equals(true));
+    });
+
+    test('take', () {
+      expect(colors.take(2), equals(colorPalette.take(2)));
+    });
+
+    test('takeWhile', () {
+      expect(colors.takeWhile((color) => color is RgbColor),
+          equals(colorPalette.takeWhile((color) => color is RgbColor)));
+    });
+
+    test('skip', () {
+      expect(colors.skip(2), equals(colorPalette.skip(2)));
+    });
+
+    test('skipWhile', () {
+      expect(colors.skipWhile((color) => color is RgbColor),
+          equals(colorPalette.skipWhile((color) => color is RgbColor)));
+    });
+
+    test('first', () {
+      expect(colors.first, equals(colorPalette.first));
+      colorPalette.first = colors.first;
+      expect(colorPalette.first, equals(colors.first));
+    });
+
+    test('last', () {
+      expect(colors.last, equals(colorPalette.last));
+      colorPalette.last = colors.last;
+      expect(colorPalette.last, equals(colors.last));
+    });
+
+    test('single', () {
+      final colors = <ColorModel>[RgbColor(255, 0, 0)];
+      final colorPalette = ColorPalette(colors);
+      expect(colors.single, equals(colorPalette.single));
+    });
+
+    test('firstWhere', () {
+      expect(colors.firstWhere((color) => colorPalette.contains(color)),
+          equals(colorPalette.firstWhere((color) => colors.contains(color))));
+    });
+
+    test('lastWhere', () {
+      expect(colors.lastWhere((color) => colorPalette.contains(color)),
+          equals(colorPalette.lastWhere((color) => colors.contains(color))));
+    });
+
+    test('singleWhere', () {
+      final colors = <ColorModel>[
+        RgbColor(255, 0, 0),
+        RgbColor(0, 255, 0),
+        RgbColor(0, 0, 255),
+      ];
+      final colorPalette = ColorPalette(colors);
+      expect(
+        colors.singleWhere((color) => color == RgbColor(0, 255, 0)),
+        equals(
+            colorPalette.singleWhere((color) => color == RgbColor(0, 255, 0))),
+      );
+    });
+
+    test('elementAt', () {
+      for (var i = 0; i < colors.length; i++) {
+        expect(colors.elementAt(i), equals(colorPalette.elementAt(i)));
+      }
+    });
+
+    test('reversed', () {
+      expect(colors.reversed, equals(colorPalette.reversed));
+    });
+
+    test('sort', () {
+      colorPalette
+          .sort((a, b) => a.toColorModel().hue.compareTo(b.toColorModel().hue));
+      expect(colors, equals(colorPalette));
+    });
+
+    test('shuffle', () {
+      colorPalette.shuffle();
+      expect(colors, equals(colorPalette));
+    });
+
+    test('indexWhere', () {
+      expect(
+          colors.indexWhere((color) => color.toColorModel().hex == '#ff0000'),
+          equals(colorPalette
+              .indexWhere((color) => color.toColorModel().hex == '#ff0000')));
+    });
+
+    test('lastIndexWhere', () {
+      expect(colors.lastIndexWhere((color) => color is RgbColor),
+          equals(colorPalette.lastIndexWhere((color) => color is RgbColor)));
+    });
+
+    test('lastIndexOf', () {
+      final color = colorPalette[Random().nextInt(colors.length)];
+      expect(
+          colors.lastIndexOf(color), equals(colorPalette.lastIndexOf(color)));
+    });
+
+    test('clear', () {
+      final colorPalette = ColorPalette(List<ColorModel>.from(colors));
+      expect(colors, equals(colorPalette));
+      colorPalette.clear();
+      expect(colorPalette.isEmpty, equals(true));
+    });
+
+    test('remove', () {
+      final color = colorPalette[Random().nextInt(colors.length)];
+      final length = colorPalette.length;
+      expect(colorPalette.remove(color), equals(true));
+      expect(colorPalette.length, equals(length - 1));
+    });
+
+    test('removeAt', () {
+      final index = Random().nextInt(colorPalette.length);
+      final length = colors.length;
+      colorPalette.removeAt(index);
+      expect(colorPalette.length, equals(length - 1));
+    });
+
+    test('removeWhere', () {
+      final random = colorPalette[Random().nextInt(colors.length)];
+      expect(colors.contains(random), equals(true));
+      final length = colorPalette.length;
+      colorPalette.removeWhere((color) => color == random);
+      expect(colorPalette.length < length, equals(true));
+    });
+
+    test('retainWhere', () {
+      final random = colorPalette[Random().nextInt(colors.length)];
+      expect(colors.contains(random), equals(true));
+      final length = colorPalette.length;
+      colorPalette.retainWhere((color) => color != random);
+      expect(colorPalette.length < length, equals(true));
+    });
+
+    test('sublist', () {
+      expect(colors.sublist(2, 4), equals(colorPalette.sublist(2, 4)));
+    });
+
+    test('getRange', () {
+      expect(colors.getRange(2, 4), equals(colorPalette.getRange(2, 4)));
+    });
+
+    test('removeRange', () {
+      colorPalette.removeRange(0, 2);
+      expect(colors, equals(colorPalette));
+    });
+
+    test('reverse', () {
+      colorPalette.reverse();
+      expect(colors, equals(colorPalette));
+    });
+
+    test('+', () {
+      expect(colors + colorPalette.colors, equals(colorPalette + colors));
+    });
+
+    test('asMap', () {
+      expect(colors.asMap(), equals(colorPalette.asMap()));
+    });
+
+    test('toString', () {
+      expect(colors.toString(), equals(colorPalette.toString()));
+    });
+  });
 }
 
 /// Rounds [value] to the thousandth.

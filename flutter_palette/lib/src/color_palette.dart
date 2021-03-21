@@ -4,17 +4,18 @@ import 'package:flutter_color_models/flutter_color_models.dart';
 import 'package:palette/palette.dart' as cp;
 import 'package:unique_list/unique_list.dart';
 
-/// Contains a [List] of [ColorModel]s.
+/// {@template flutter_palette.ColorPalette}
 ///
-/// Has constructors for generating new color palettes, as well as methods
+/// Wraps a list of [ColorModel]s with additional getters and methods;
+/// with constructors for generating new color palettes, as well as methods
 /// and operators for modifying and extracting colors from the palette.
-class ColorPalette extends cp.ColorPalette {
-  /// Contains a [List] of [ColorModel]s.
-  ///
-  /// Has constructors for generating new color palettes, as well as methods
-  /// and operators for modifying and extracting colors from the palette.
-  ///
-  /// [colors] must not be `null`.
+///
+/// [Color] can be used interchangeably with [ColorModel]s by all relevant
+/// methods and constructors.
+///
+/// {@endtemplate}
+class ColorPalette extends cp.ColorPaletteBase<Color, ColorModel> {
+  /// {@macro flutter_palette.ColorPalette}
   const ColorPalette(this.colors) : super(colors);
 
   /// Constructs a [ColorPalette] from [colors].
@@ -258,7 +259,7 @@ class ColorPalette extends cp.ColorPalette {
   /// the generated colors will be appended to the end of the list.
   /// [insertOpposites] defaults to `true` and must not be `null`.
   factory ColorPalette.opposites(
-    ColorPalette colorPalette, {
+    cp.ColorPaletteBase colorPalette, {
     bool insertOpposites = true,
     bool growable = true,
     bool unique = false,
@@ -281,34 +282,100 @@ class ColorPalette extends cp.ColorPalette {
       colors.map<Color>((color) => color.toColor()).toList(growable: growable);
 
   @override
-  ColorPalette getRange(int start, int end) =>
-      ColorPalette(colors.getRange(start, end).toList());
+  Color closest(Color color) => super.closest(color.toColorModel());
 
-  /// Returns the concatenation of this palette's colors and [other]s'.
-  ///
-  /// [other] may be a [ColorPalette], [List<Color>], or a [List<ColorModel>].
   @override
-  ColorPalette operator +(dynamic other) {
-    assert(other is ColorPalette ||
-        other is List<ColorModel> ||
-        other is List<Color>);
+  Color furthest(Color color) => super.furthest(color.toColorModel());
 
-    late List<ColorModel> colors;
+  @override
+  bool contains(Object? color) {
+    if (color is Color) color = color.toColorModel();
+    return colors.contains(color);
+  }
 
-    if (other is ColorPalette) {
-      colors = other.colors;
-    } else if (other is List<ColorModel>) {
-      colors = other;
-    } else if (other is List<Color>) {
-      colors = List<ColorModel>.from(
-          other.map((color) => RgbColor.fromColor(color)));
-    }
+  @override
+  Iterable<ColorModel> followedBy(Iterable<Color> other) =>
+      colors.followedBy(other.toColorModels());
 
-    return ColorPalette(this.colors + colors);
+  @override
+  int indexOf(Color color, [int start = 0]) {
+    assert(start >= 0 && start < length);
+    return colors.indexOf(color.toColorModel(), start);
   }
 
   @override
   ColorModel operator [](int index) => colors[index];
+
+  @override
+  void operator []=(int index, Color value) {
+    colors[index] = value.toColorModel();
+  }
+
+  @override
+  set first(Color color) {
+    colors.first = color.toColorModel();
+  }
+
+  @override
+  set last(Color color) {
+    colors.last = color.toColorModel();
+  }
+
+  @override
+  void add(Color color) {
+    colors.add(color.toColorModel());
+  }
+
+  @override
+  void addAll(Iterable<Color> colors) {
+    this.colors.addAll(colors.toColorModels());
+  }
+
+  @override
+  void insert(int index, Color color) {
+    assert(index >= 0 && index < length);
+    colors.insert(index, color.toColorModel());
+  }
+
+  @override
+  void insertAll(int index, Iterable<Color> colors) {
+    assert(index >= 0 && index < length);
+    this.colors.setAll(index, colors.toColorModels());
+  }
+
+  @override
+  void setAll(int index, Iterable<Color> colors) {
+    assert(index >= 0 && index < length);
+    this.colors.setAll(index, colors.toColorModels());
+  }
+
+  @override
+  void setRange(int start, int end, Iterable<Color> colors,
+      [int skipCount = 0]) {
+    assert(start >= 0 && start <= end);
+    assert(end >= start && end < length);
+    assert(skipCount >= 0);
+    assert(end - start + skipCount <= length);
+    this.colors.setRange(start, end, colors.toColorModels(), skipCount);
+  }
+
+  @override
+  void fillRange(int start, int end, [Color? fillColor]) {
+    assert(start >= 0 && start <= end);
+    assert(end >= start && end < length);
+    colors.fillRange(start, end, fillColor?.toColorModel());
+  }
+
+  @override
+  void replaceRange(int start, int end, Iterable<Color> replacement) {
+    assert(start >= 0 && start <= end);
+    assert(end >= start && end < length);
+    colors.replaceRange(start, end, replacement.toColorModels());
+  }
+
+  @override
+  ColorPalette operator +(Iterable<Color> other) =>
+      ColorPalette(colors + other.toColorModels());
 
   /// Casts the colors in [palette] from the [color_model] package's
   /// [ColorModel] class, to the [flutter_color_model] package's [ColorModel]

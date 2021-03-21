@@ -3,19 +3,713 @@ import 'package:color_models/color_models.dart';
 import 'package:num_utilities/num_utilities.dart';
 import 'package:unique_list/unique_list.dart';
 
-/// A color palette made of a [List] of [ColorModel]s.
+/// The base class for [ColorPalette]s.
+abstract class ColorPaletteBase<I, O extends ColorModel> implements List<I> {
+  const ColorPaletteBase(this.colors);
+
+  /// The colors contained in the palette.
+  final List<O> colors;
+
+  /// Returns the color with the highest perceived brightness value.
+  O get brightest => colors.reduce((color1, color2) {
+        return color1.toHspColor().perceivedBrightness <
+                color2.toHspColor().perceivedBrightness
+            ? color2
+            : color1;
+      });
+
+  /// Returns the color with the lowest perceived brightness value.
+  O get dimmest => colors.reduce((color1, color2) {
+        return color1.toHspColor().perceivedBrightness <
+                color2.toHspColor().perceivedBrightness
+            ? color1
+            : color2;
+      });
+
+  /// Returns the color with the highest lightness value.
+  O get lightest => colors.reduce((color1, color2) {
+        return color1.toHslColor().lightness < color2.toHslColor().lightness
+            ? color2
+            : color1;
+      });
+
+  /// Returns the color with the lowest lightness value.
+  O get darkest => colors.reduce((color1, color2) {
+        return color1.toHslColor().lightness < color2.toHslColor().lightness
+            ? color1
+            : color2;
+      });
+
+  /// Returns the color with the highest intensity value.
+  O get mostIntense => colors.reduce((color1, color2) {
+        return color1.toHsiColor().intensity < color2.toHsiColor().intensity
+            ? color2
+            : color1;
+      });
+
+  /// Returns the color with the lowest intensity value.
+  O get leastIntense => colors.reduce((color1, color2) {
+        return color1.toHsiColor().intensity < color2.toHsiColor().intensity
+            ? color1
+            : color2;
+      });
+
+  /// Returns the color with the highest saturation value.
+  O get deepest => colors.reduce((color1, color2) =>
+      color1.saturation < color2.saturation ? color2 : color1);
+
+  /// Returns the color with the lowest saturation value.
+  O get dullest => colors.reduce((color1, color2) =>
+      color1.saturation < color2.saturation ? color1 : color2);
+
+  /// Returns the color with the highest combined saturation
+  /// and brightness values.
+  O get richest => colors.reduce((color1, color2) {
+        final hsb1 = color1.toHsbColor();
+        final hsb2 = color2.toHsbColor();
+
+        final value1 = hsb1.saturation + hsb1.brightness;
+        final value2 = hsb2.saturation + hsb2.brightness;
+
+        return value1 < value2 ? color2 : color1;
+      });
+
+  /// Returns the color with the lowest combined saturation
+  /// and brightness values.
+  O get muted => colors.reduce((color1, color2) {
+        final hsb1 = color1.toHsbColor();
+        final hsb2 = color2.toHsbColor();
+
+        final value1 = hsb1.saturation + hsb1.brightness;
+        final value2 = hsb2.saturation + hsb2.brightness;
+
+        return value1 < value2 ? color1 : color2;
+      });
+
+  /// Returns the color with the reddest hue. (0°)
+  O get red =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 0));
+
+  /// Returns the color with the most red-orange hue. (30°)
+  O get redOrange =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 30));
+
+  /// Returns the color with the orangest hue. (60°)
+  O get orange =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 60));
+
+  /// Returns the color with the most yellow-orange hue. (90°)
+  O get yellowOrange =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 90));
+
+  /// Returns the color with the yellowest hue. (120°)
+  O get yellow =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 120));
+
+  /// Returns the color with the most yellow-green hue. (150°)
+  O get yellowGreen =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 150));
+
+  /// Returns the color with the greenest hue. (180°)
+  O get green =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 180));
+
+  /// Returns the color with the most cyan hue. (210°)
+  O get cyan =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 210));
+
+  /// Returns the color with the most bluest hue. (240°)
+  O get blue =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 240));
+
+  /// Returns the color with the most blue-violet hue. (270°)
+  O get blueViolet =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 270));
+
+  /// Returns the color with the most violet hue. (300°)
+  O get violet =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 300));
+
+  /// Returns the color with the most magenta hue. (330°)
+  O get magenta =>
+      colors.reduce((color1, color2) => _compareDistance(color1, color2, 330));
+
+  /// Returns the color with the values closest to [color].
+  ///
+  /// The difference in values is determined by calculating the difference
+  /// between each colors' respective hue, saturation, and perceived brightness
+  /// values, giving the difference in hue twice the weight of the difference
+  /// in the saturation and perceived brightness values.
+  I closest(I color) => colors.closest(color as O) as I;
+
+  /// Returns the color with the values furthest from [color].
+  ///
+  /// The difference in values is determined by calculating the difference
+  /// between each colors' respective hue, saturation, and perceived brightness
+  /// values, giving the difference in hue twice the weight of the difference
+  /// in the saturation and perceived brightness values.
+  I furthest(I color) => colors.furthest(color as O) as I;
+
+  /// Inverts the values of every color in the palette in their respective
+  /// color spaces.
+  void invert() {
+    for (var i = 0; i < length; i++) {
+      colors[i] = colors[i].inverted as O;
+    }
+  }
+
+  /// Rotates the hue of every color in the palette by `180` degrees.
+  ///
+  /// __Note:__ Use the [ColorPalette.opposites] constructor to generate
+  /// a new palette that includes the colors in this palette and their
+  /// respective opposites.
+  void opposite() {
+    for (var i = 0; i < length; i++) {
+      colors[i] = colors[i].opposite as O;
+    }
+  }
+
+  /// Rotates the hue of every color in the palette by [amount].
+  void rotateHue(num amount) {
+    for (var i = 0; i < length; i++) {
+      colors[i] = colors[i].rotateHue(amount) as O;
+    }
+  }
+
+  /// Adjusts the hue of every color in the palette to be warmer by [amount],
+  /// capping the value at `90` degrees.
+  ///
+  /// If [relative] is true, [amount] will be treated as a percentage and the
+  /// hue will be adjusted by the percent of the distance from the current hue
+  /// to `90` that [amount] represents. If false, [amount] will be treated as
+  /// the number of degrees to adjust the hue by.
+  void warmer(
+    num amount, {
+    bool relative = true,
+  }) {
+    for (var i = 0; i < length; i++) {
+      colors[i] = colors[i].warmer(amount, relative: relative) as O;
+    }
+  }
+
+  /// Adjusts the hue of every color in the palette to be cooler by [amount],
+  /// capping the value at `270` degrees.
+  ///
+  /// If [relative] is true, [amount] will be treated as a percentage and the
+  /// hue will be adjusted by the percent of the distance from the current hue
+  /// to `270` that [amount] represents. If false, [amount] will be treated as
+  /// the number of degrees to adjust the hue by.
+  void cooler(
+    num amount, {
+    bool relative = true,
+  }) {
+    for (var i = 0; i < length; i++) {
+      colors[i] = colors[i].cooler(amount, relative: relative) as O;
+    }
+  }
+
+  @override
+  Iterator<I> get iterator => colors.iterator as Iterator<I>;
+
+  @override
+  List<R> cast<R>() => colors.cast<R>();
+
+  @override
+  Iterable<T> map<T>(T Function(I) f) => colors.map<T>(f as T Function(O));
+
+  @override
+  Iterable<I> where(bool Function(I) test) =>
+      colors.where(test as bool Function(O)) as Iterable<I>;
+
+  @override
+  Iterable<T> whereType<T>() => colors.whereType<T>();
+
+  @override
+  Iterable<T> expand<T>(Iterable<T> Function(I) f) =>
+      colors.expand<T>(f as Iterable<T> Function(O));
+
+  @override
+  void forEach(void Function(I) f) => colors.forEach(f as void Function(O));
+
+  @override
+  I reduce(I Function(I, I) combine) =>
+      colors.reduce(combine as O Function(O, O)) as I;
+
+  @override
+  T fold<T>(T initialValue, T Function(T, I) combine) =>
+      colors.fold(initialValue, combine as T Function(T, O));
+
+  @override
+  bool every(bool Function(I) test) => colors.every(test as bool Function(O));
+
+  @override
+  String join([String separator = '']) => colors.join(separator);
+
+  @override
+  bool any(bool Function(I) test) => colors.any(test as bool Function(O));
+
+  @override
+  List<I> toList({bool growable = true}) =>
+      colors.toList(growable: growable) as List<I>;
+
+  @override
+  Set<I> toSet() => colors.toSet() as Set<I>;
+
+  @override
+  I operator [](int index) {
+    assert(index >= 0 && index < length);
+    return colors[index] as I;
+  }
+
+  /// The number of [colors] in the palette.
+  @override
+  int get length => colors.length;
+
+  @override
+  set length(int newLength) {
+    colors.length = newLength;
+  }
+
+  @override
+  bool get isEmpty => colors.isEmpty;
+
+  @override
+  bool get isNotEmpty => colors.isNotEmpty;
+
+  @override
+  Iterable<I> take(int count) {
+    assert(count >= 0);
+    return colors.take(count) as Iterable<I>;
+  }
+
+  @override
+  Iterable<I> takeWhile(bool Function(I) test) =>
+      colors.takeWhile(test as bool Function(O)) as Iterable<I>;
+
+  @override
+  Iterable<I> skip(int count) {
+    assert(count >= 0);
+    return colors.skip(count) as Iterable<I>;
+  }
+
+  @override
+  Iterable<I> skipWhile(bool Function(I) test) =>
+      colors.skipWhile(test as bool Function(O)) as Iterable<I>;
+
+  @override
+  I get first => colors.first as I;
+
+  @override
+  I get last => colors.last as I;
+
+  @override
+  I get single => colors.single as I;
+
+  @override
+  I firstWhere(bool Function(I) test, {I Function()? orElse}) {
+    late I value;
+    try {
+      value = colors.firstWhere(test as bool Function(O)) as I;
+    } on StateError {
+      if (orElse != null) {
+        value = orElse();
+      } else {
+        rethrow;
+      }
+    }
+    return value;
+  }
+
+  @override
+  I lastWhere(bool Function(I) test, {I Function()? orElse}) {
+    late I value;
+    try {
+      value = colors.lastWhere(test as bool Function(O)) as I;
+    } on StateError {
+      if (orElse != null) {
+        value = orElse();
+      } else {
+        rethrow;
+      }
+    }
+    return value;
+  }
+
+  @override
+  I singleWhere(bool Function(I) test, {I Function()? orElse}) {
+    late I value;
+    try {
+      value = colors.singleWhere(test as bool Function(O)) as I;
+    } on StateError {
+      if (orElse != null) {
+        value = orElse();
+      } else {
+        rethrow;
+      }
+    }
+    return value;
+  }
+
+  @override
+  I elementAt(int index) {
+    assert(index >= 0 && index < length);
+    return colors.elementAt(index) as I;
+  }
+
+  @override
+  Iterable<I> get reversed => colors.reversed as Iterable<I>;
+
+  @override
+  void sort([int Function(I, I)? compare]) => (colors as List<I>).sort(compare);
+
+  @override
+  void shuffle([Random? random]) => colors.shuffle(random);
+
+  @override
+  int indexWhere(bool Function(I) test, [int start = 0]) {
+    assert(start >= 0 && start < length);
+    return colors.indexWhere(test as bool Function(O), start);
+  }
+
+  @override
+  int lastIndexWhere(bool Function(I) test, [int? start]) {
+    assert(start == null || (start >= 0 && start < length));
+    return colors.lastIndexWhere(test as bool Function(O), start);
+  }
+
+  @override
+  int lastIndexOf(I color, [int? start]) {
+    assert(start == null || (start >= 0 && start < length));
+    return colors.lastIndexOf(color as O, start);
+  }
+
+  @override
+  void clear() => colors.clear();
+
+  @override
+  bool remove(Object? color) => colors.remove(color);
+
+  @override
+  I removeAt(int index) {
+    assert(index >= 0 && index < length);
+    return colors.removeAt(index) as I;
+  }
+
+  @override
+  I removeLast() => colors.removeLast() as I;
+
+  @override
+  void removeWhere(bool Function(I) test) =>
+      colors.removeWhere(test as bool Function(O));
+
+  @override
+  void retainWhere(bool Function(I) test) =>
+      colors.retainWhere(test as bool Function(O));
+
+  @override
+  List<I> sublist(int start, [int? end]) {
+    assert(start >= 0 && start < (end ?? length));
+    assert(end == null || (end >= start && end <= length));
+    return colors.sublist(start, end) as List<I>;
+  }
+
+  @override
+  Iterable<I> getRange(int start, int end) {
+    assert(start >= 0 && start <= end);
+    assert(end >= start && end <= length);
+    return colors.getRange(start, end) as Iterable<I>;
+  }
+
+  @override
+  void removeRange(int start, int end) {
+    assert(start >= 0 && start <= end);
+    assert(end >= start && end <= length);
+    return colors.removeRange(start, end);
+  }
+
+  /// Reverses the order of the colors in the palette.
+  void reverse() => colors.replaceRange(0, length, colors.reversed);
+
+  /// Sorts the palette by [property].
+  ///
+  /// [property] must not be `null`.
+  void sortBy(ColorSortingProperty property) {
+    if (colors.length <= 1) return;
+
+    if (property == ColorSortingProperty.similarity ||
+        property == ColorSortingProperty.difference) {
+      _sortByDifference(property);
+      return;
+    }
+
+    colors.sort((a, b) {
+      late num value1;
+      late num value2;
+      var inverse = false;
+
+      switch (property) {
+        case ColorSortingProperty.brightest:
+          value1 = a.toHspColor().perceivedBrightness;
+          value2 = b.toHspColor().perceivedBrightness;
+          inverse = true;
+          break;
+        case ColorSortingProperty.dimmest:
+          value1 = a.toHspColor().perceivedBrightness;
+          value2 = b.toHspColor().perceivedBrightness;
+          break;
+        case ColorSortingProperty.lightest:
+          value1 = a.toHslColor().lightness;
+          value2 = b.toHslColor().lightness;
+          inverse = true;
+          break;
+        case ColorSortingProperty.darkest:
+          value1 = a.toHslColor().lightness;
+          value2 = b.toHslColor().lightness;
+          break;
+        case ColorSortingProperty.mostIntense:
+          value1 = a.toHsiColor().intensity;
+          value2 = b.toHsiColor().intensity;
+          inverse = true;
+          break;
+        case ColorSortingProperty.leastIntense:
+          value1 = a.toHsiColor().intensity;
+          value2 = b.toHsiColor().intensity;
+          break;
+        case ColorSortingProperty.deepest:
+          value1 = a.saturation;
+          value2 = b.saturation;
+          inverse = true;
+          break;
+        case ColorSortingProperty.dullest:
+          value1 = a.saturation;
+          value2 = b.saturation;
+          break;
+        case ColorSortingProperty.richest:
+          var color1 = a.toHsbColor();
+          var color2 = b.toHsbColor();
+          value1 = color1.saturation + color1.brightness;
+          value2 = color2.saturation + color2.brightness;
+          inverse = true;
+          break;
+        case ColorSortingProperty.muted:
+          var color1 = a.toHsbColor();
+          var color2 = b.toHsbColor();
+          value1 = color1.saturation + color1.brightness;
+          value2 = color2.saturation + color2.brightness;
+          break;
+        case ColorSortingProperty.red:
+          value1 = a.hue.calculateDistance(0);
+          value2 = b.hue.calculateDistance(0);
+          break;
+        case ColorSortingProperty.redOrange:
+          value1 = a.hue.calculateDistance(30);
+          value2 = b.hue.calculateDistance(30);
+          break;
+        case ColorSortingProperty.orange:
+          value1 = a.hue.calculateDistance(60);
+          value2 = b.hue.calculateDistance(60);
+          break;
+        case ColorSortingProperty.yellowOrange:
+          value1 = a.hue.calculateDistance(90);
+          value2 = b.hue.calculateDistance(90);
+          break;
+        case ColorSortingProperty.yellow:
+          value1 = a.hue.calculateDistance(120);
+          value2 = b.hue.calculateDistance(120);
+          break;
+        case ColorSortingProperty.yellowGreen:
+          value1 = a.hue.calculateDistance(150);
+          value2 = b.hue.calculateDistance(150);
+          break;
+        case ColorSortingProperty.green:
+          value1 = a.hue.calculateDistance(180);
+          value2 = b.hue.calculateDistance(180);
+          break;
+        case ColorSortingProperty.cyan:
+          value1 = a.hue.calculateDistance(210);
+          value2 = b.hue.calculateDistance(210);
+          break;
+        case ColorSortingProperty.blue:
+          value1 = a.hue.calculateDistance(240);
+          value2 = b.hue.calculateDistance(240);
+          break;
+        case ColorSortingProperty.blueViolet:
+          value1 = a.hue.calculateDistance(270);
+          value2 = b.hue.calculateDistance(270);
+          break;
+        case ColorSortingProperty.violet:
+          value1 = a.hue.calculateDistance(300);
+          value2 = b.hue.calculateDistance(300);
+          break;
+        case ColorSortingProperty.magenta:
+          value1 = a.hue.calculateDistance(330);
+          value2 = b.hue.calculateDistance(330);
+          break;
+        default:
+          break;
+      }
+
+      return inverse ? value2.compareTo(value1) : value1.compareTo(value2);
+    });
+  }
+
+  /// Compares the distance between [hue] and [color1]/[color2].
+  /// The color closest to [hue] will be returned.
+  static O _compareDistance<O extends ColorModel>(
+    O color1,
+    O color2,
+    num hue,
+  ) {
+    assert(hue >= 0 && hue <= 360);
+    final distance1 = color1.hue.calculateDistance(hue);
+    final distance2 = color2.hue.calculateDistance(hue);
+    return distance1 <= distance2 ? color1 : color2;
+  }
+
+  /// Converts all [colors] into the [ColorModel] represented by [colorSpace].
+  void toColorSpace(ColorSpace colorSpace) {
+    for (var i = 0; i < colors.length; i++) {
+      switch (colorSpace) {
+        case ColorSpace.cmyk:
+          colors[i] = colors[i].toCmykColor() as O;
+          break;
+        case ColorSpace.hsi:
+          colors[i] = colors[i].toHsiColor() as O;
+          break;
+        case ColorSpace.hsl:
+          colors[i] = colors[i].toHslColor() as O;
+          break;
+        case ColorSpace.hsp:
+          colors[i] = colors[i].toHspColor() as O;
+          break;
+        case ColorSpace.hsb:
+          colors[i] = colors[i].toHsbColor() as O;
+          break;
+        case ColorSpace.lab:
+          colors[i] = colors[i].toLabColor() as O;
+          break;
+        case ColorSpace.oklab:
+          colors[i] = colors[i].toOklabColor() as O;
+          break;
+        case ColorSpace.rgb:
+          colors[i] = colors[i].toRgbColor() as O;
+          break;
+        case ColorSpace.xyz:
+          colors[i] = colors[i].toXyzColor() as O;
+          break;
+      }
+    }
+  }
+
+  /// Sorts the colors in the palette by their similarity to one another.
+  void _sortByDifference(ColorSortingProperty order) {
+    assert(order == ColorSortingProperty.similarity ||
+        order == ColorSortingProperty.difference);
+
+    // Compare every color to every other color and calculate the difference
+    // between them.
+    final differences = <int, List<double?>>{};
+
+    for (var i = 0; i < length; i++) {
+      differences.addAll({
+        i: List<double?>.generate(
+          length,
+          (index) =>
+              i == index ? null : colors[i].calculateDifference(colors[index]),
+        ),
+      });
+    }
+
+    // Determine the starting color by finding the color that's both the
+    // most and least different to the other colors in the palette.
+    var startingColor = 0;
+    var lowestDifference = differences[0]!.lowest;
+    var highestDifference = differences[0]!.highest;
+
+    for (var i = 1; i < length; i++) {
+      final leastDifferent = differences[i]!.lowest;
+      final mostDifferent = differences[i]!.highest;
+
+      if ((order == ColorSortingProperty.similarity &&
+              (leastDifferent! < lowestDifference! ||
+                  (leastDifferent == lowestDifference &&
+                      mostDifferent! > highestDifference!))) ||
+          (order == ColorSortingProperty.difference &&
+              (mostDifferent! > highestDifference! ||
+                  (mostDifferent == highestDifference &&
+                      leastDifferent! < lowestDifference!)))) {
+        startingColor = i;
+        lowestDifference = leastDifferent;
+        highestDifference = mostDifferent;
+      }
+    }
+
+    // Sort the colors in the order of their similiarity
+    final newPalette = <O>[colors[startingColor]];
+    final oldPalette = List<O>.from(colors)..removeAt(startingColor);
+
+    while (oldPalette.isNotEmpty) {
+      final color = order == ColorSortingProperty.similarity
+          ? oldPalette.closest(newPalette.last) as O
+          : oldPalette.furthest(newPalette.last) as O;
+
+      newPalette.add(color);
+      oldPalette.remove(color);
+    }
+
+    colors.setAll(0, newPalette);
+  }
+
+  /// Sorts the palette by each colors hue.
+  ///
+  /// [startingFrom] sets where on the color wheel the colors will start
+  /// sorting from. [startingFrom] must be `>= 0 && <= 360` and must not
+  /// be `null`.
+  ///
+  /// If [clockwise] is `true`, the colors will be sorted in ascending order
+  /// around the color wheel. If `false`, they will be sorted in descending
+  /// order. [clockwise] must not be `null`.
+  void sortByHue({
+    num startingFrom = 0,
+    bool clockwise = true,
+  }) {
+    assert(startingFrom >= 0 && startingFrom <= 360);
+
+    colors.sort((a, b) {
+      var hue1 = a.hue;
+      var hue2 = b.hue;
+
+      if (clockwise) {
+        if (hue1 < startingFrom) hue1 += 360;
+        if (hue2 < startingFrom) hue2 += 360;
+
+        return hue2.compareTo(hue1);
+      }
+
+      if (hue1 < startingFrom) hue1 -= 360;
+      if (hue2 < startingFrom) hue2 -= 360;
+
+      return hue1.compareTo(hue2);
+    });
+  }
+
+  @override
+  Map<int, I> asMap() => colors.asMap() as Map<int, I>;
+
+  @override
+  String toString() => colors.toString();
+}
+
+/// {@template palette.ColorPalette}
 ///
-/// Has constructors for generating new color palettes, as well as methods
+/// Wraps a list of [ColorModel]s with additional getters and methods;
+/// with constructors for generating new color palettes, as well as methods
 /// and operators for modifying and extracting colors from the palette.
-class ColorPalette {
-  /// A color palette made of a [List] of [ColorModel]s.
-  ///
-  /// Has constructors for generating new color palettes, as well as methods
-  /// and operators for modifying and extracting colors from the palette.
-  ///
-  /// [colors] contains all of the colors in the palette, it must not be `null`,
-  /// but it may be empty.
-  const ColorPalette(this.colors);
+///
+/// {@endtemplate}
+class ColorPalette extends ColorPaletteBase<ColorModel, ColorModel> {
+  /// {@macro palette.ColorPalette}
+  const ColorPalette(List<ColorModel> colors) : super(colors);
 
   /// Returns a [ColorPalette] with an empty list of [colors].
   factory ColorPalette.empty({bool unique = false}) {
@@ -419,7 +1113,7 @@ class ColorPalette {
   /// If [unique] is `false`, the palette will be constructed with a [List].
   /// If `true`, a [uniqueList] will be used instead.
   factory ColorPalette.opposites(
-    ColorPalette colorPalette, {
+    ColorPaletteBase colorPalette, {
     bool insertOpposites = true,
     bool growable = true,
     bool unique = false,
@@ -436,539 +1130,6 @@ class ColorPalette {
     return ColorPalette(unique
         ? UniqueList<ColorModel>.from(palette, growable: growable)
         : List<ColorModel>.from(palette, growable: growable));
-  }
-
-  /// The colors contained in the palette.
-  final List<ColorModel> colors;
-
-  /// Returns the color with the highest perceived brightness value.
-  ColorModel get brightest => colors.reduce((color1, color2) {
-        return color1.toHspColor().perceivedBrightness <
-                color2.toHspColor().perceivedBrightness
-            ? color2
-            : color1;
-      });
-
-  /// Returns the color with the lowest perceived brightness value.
-  ColorModel get dimmest => colors.reduce((color1, color2) {
-        return color1.toHspColor().perceivedBrightness <
-                color2.toHspColor().perceivedBrightness
-            ? color1
-            : color2;
-      });
-
-  /// Returns the color with the highest lightness value.
-  ColorModel get lightest => colors.reduce((color1, color2) {
-        return color1.toHslColor().lightness < color2.toHslColor().lightness
-            ? color2
-            : color1;
-      });
-
-  /// Returns the color with the lowest lightness value.
-  ColorModel get darkest => colors.reduce((color1, color2) {
-        return color1.toHslColor().lightness < color2.toHslColor().lightness
-            ? color1
-            : color2;
-      });
-
-  /// Returns the color with the highest intensity value.
-  ColorModel get mostIntense => colors.reduce((color1, color2) {
-        return color1.toHsiColor().intensity < color2.toHsiColor().intensity
-            ? color2
-            : color1;
-      });
-
-  /// Returns the color with the lowest intensity value.
-  ColorModel get leastIntense => colors.reduce((color1, color2) {
-        return color1.toHsiColor().intensity < color2.toHsiColor().intensity
-            ? color1
-            : color2;
-      });
-
-  /// Returns the color with the highest saturation value.
-  ColorModel get deepest => colors.reduce((color1, color2) =>
-      color1.saturation < color2.saturation ? color2 : color1);
-
-  /// Returns the color with the lowest saturation value.
-  ColorModel get dullest => colors.reduce((color1, color2) =>
-      color1.saturation < color2.saturation ? color1 : color2);
-
-  /// Returns the color with the highest combined saturation
-  /// and brightness values.
-  ColorModel get richest => colors.reduce((color1, color2) {
-        final hsb1 = color1.toHsbColor();
-        final hsb2 = color2.toHsbColor();
-
-        final value1 = hsb1.saturation + hsb1.brightness;
-        final value2 = hsb2.saturation + hsb2.brightness;
-
-        return value1 < value2 ? color2 : color1;
-      });
-
-  /// Returns the color with the lowest combined saturation
-  /// and brightness values.
-  ColorModel get muted => colors.reduce((color1, color2) {
-        final hsb1 = color1.toHsbColor();
-        final hsb2 = color2.toHsbColor();
-
-        final value1 = hsb1.saturation + hsb1.brightness;
-        final value2 = hsb2.saturation + hsb2.brightness;
-
-        return value1 < value2 ? color1 : color2;
-      });
-
-  /// Returns the color with the reddest hue. (0°)
-  ColorModel get red =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 0));
-
-  /// Returns the color with the most red-orange hue. (30°)
-  ColorModel get redOrange =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 30));
-
-  /// Returns the color with the orangest hue. (60°)
-  ColorModel get orange =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 60));
-
-  /// Returns the color with the most yellow-orange hue. (90°)
-  ColorModel get yellowOrange =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 90));
-
-  /// Returns the color with the yellowest hue. (120°)
-  ColorModel get yellow =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 120));
-
-  /// Returns the color with the most yellow-green hue. (150°)
-  ColorModel get yellowGreen =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 150));
-
-  /// Returns the color with the greenest hue. (180°)
-  ColorModel get green =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 180));
-
-  /// Returns the color with the most cyan hue. (210°)
-  ColorModel get cyan =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 210));
-
-  /// Returns the color with the most bluest hue. (240°)
-  ColorModel get blue =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 240));
-
-  /// Returns the color with the most blue-violet hue. (270°)
-  ColorModel get blueViolet =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 270));
-
-  /// Returns the color with the most violet hue. (300°)
-  ColorModel get violet =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 300));
-
-  /// Returns the color with the most magenta hue. (330°)
-  ColorModel get magenta =>
-      colors.reduce((color1, color2) => _compareDistance(color1, color2, 330));
-
-  /// Returns the color with the values closest to [color].
-  ///
-  /// The difference in values is determined by calculating the difference
-  /// between each colors' respective hue, saturation, and perceived brightness
-  /// values, giving the difference in hue twice the weight of the difference
-  /// in the saturation and perceived brightness values.
-  ColorModel closest(ColorModel color) => colors.closest(color);
-
-  /// Returns the color with the values furthest from [color].
-  ///
-  /// The difference in values is determined by calculating the difference
-  /// between each colors' respective hue, saturation, and perceived brightness
-  /// values, giving the difference in hue twice the weight of the difference
-  /// in the saturation and perceived brightness values.
-  ColorModel furthest(ColorModel color) => colors.furthest(color);
-
-  /// Compares the distance between [hue] and [color1]/[color2].
-  /// The color closest to [hue] will be returned.
-  static ColorModel _compareDistance(
-    ColorModel color1,
-    ColorModel color2,
-    num hue,
-  ) {
-    assert(hue >= 0 && hue <= 360);
-    final distance1 = color1.hue.calculateDistance(hue);
-    final distance2 = color2.hue.calculateDistance(hue);
-    return distance1 <= distance2 ? color1 : color2;
-  }
-
-  /// Converts all [colors] into the [ColorModel] representing [colorSpace].
-  void toColorSpace(ColorSpace colorSpace) {
-    for (var i = 0; i < colors.length; i++) {
-      switch (colorSpace) {
-        case ColorSpace.cmyk:
-          colors[i] = colors[i].toCmykColor();
-          break;
-        case ColorSpace.hsi:
-          colors[i] = colors[i].toHsiColor();
-          break;
-        case ColorSpace.hsl:
-          colors[i] = colors[i].toHslColor();
-          break;
-        case ColorSpace.hsp:
-          colors[i] = colors[i].toHspColor();
-          break;
-        case ColorSpace.hsb:
-          colors[i] = colors[i].toHsbColor();
-          break;
-        case ColorSpace.lab:
-          colors[i] = colors[i].toLabColor();
-          break;
-        case ColorSpace.oklab:
-          colors[i] = colors[i].toOklabColor();
-          break;
-        case ColorSpace.rgb:
-          colors[i] = colors[i].toRgbColor();
-          break;
-        case ColorSpace.xyz:
-          colors[i] = colors[i].toXyzColor();
-          break;
-      }
-    }
-  }
-
-  /// Inverts the values of every color in the palette in their respective
-  /// color spaces.
-  void invert() {
-    for (var i = 0; i < length; i++) {
-      colors[i] = colors[i].inverted;
-    }
-  }
-
-  /// Rotates the hue of every color in the palette by `180` degrees.
-  ///
-  /// __Note:__ Use the [ColorPalette.opposites] constructor to generate
-  /// a new palette that includes the colors in this palette and their
-  /// respective opposites.
-  void opposite() {
-    for (var i = 0; i < length; i++) {
-      colors[i] = colors[i].opposite;
-    }
-  }
-
-  /// Rotates the hue of every color in the palette by [amount].
-  void rotateHue(num amount) {
-    for (var i = 0; i < length; i++) {
-      colors[i] = colors[i].rotateHue(amount);
-    }
-  }
-
-  /// Adjusts the hue of every color in the palette to be warmer by [amount],
-  /// capping the value at `90` degrees.
-  ///
-  /// If [relative] is true, [amount] will be treated as a percentage and the
-  /// hue will be adjusted by the percent of the distance from the current hue
-  /// to `90` that [amount] represents. If false, [amount] will be treated as
-  /// the number of degrees to adjust the hue by.
-  void warmer(
-    num amount, {
-    bool relative = true,
-  }) {
-    for (var i = 0; i < length; i++) {
-      colors[i] = colors[i].warmer(amount, relative: relative);
-    }
-  }
-
-  /// Adjusts the hue of every color in the palette to be cooler by [amount],
-  /// capping the value at `270` degrees.
-  ///
-  /// If [relative] is true, [amount] will be treated as a percentage and the
-  /// hue will be adjusted by the percent of the distance from the current hue
-  /// to `270` that [amount] represents. If false, [amount] will be treated as
-  /// the number of degrees to adjust the hue by.
-  void cooler(
-    num amount, {
-    bool relative = true,
-  }) {
-    for (var i = 0; i < length; i++) {
-      colors[i] = colors[i].cooler(amount, relative: relative);
-    }
-  }
-
-  /// Adds [color] to the end of the palette, extending the length by 1.
-  void add(ColorModel color) {
-    colors.add(color);
-  }
-
-  /// Adds every [ColorModel] contained in [colors] to the end of the palette.
-  void addAll(List<ColorModel> colors) {
-    this.colors.addAll(colors);
-  }
-
-  /// Inserts the [color] into the palette at the position of [index].
-  ///
-  /// [index] must be `>= 0 && <= length` and must not be `null`.
-  void insert(int index, ColorModel color) {
-    assert(index >= 0 && index <= length);
-    colors.insert(index, color);
-  }
-
-  /// Inserts all [colors] into the palette at the position of [index].
-  ///
-  /// [index] must be `>= 0 && <= length` and must not be `null`.
-  void insertAll(int index, List<ColorModel> colors) {
-    assert(index >= 0 && index <= length);
-    colors.insertAll(index, colors);
-  }
-
-  /// Removes the first occurence of [color] from the palette.
-  bool remove(ColorModel color) => colors.remove(color);
-
-  /// Returns a [ColorPalette] of the colors ranging in this
-  /// palette from [start] inclusive to [end] exclusive.
-  ColorPalette getRange(int start, int end) =>
-      ColorPalette(colors.getRange(start, end).toList());
-
-  /// Copies the objects of [colorPalette], skipping [skipCount] objects first,
-  /// into the range [start], inclusive, to [end], exclusive, of the palette.
-  void setRange(int start, int end, ColorPalette colorPalette,
-          [int skipCount = 0]) =>
-      colors.setRange(start, end, colorPalette.colors);
-
-  /// Removes the colors from the palette in the range
-  /// [start] inclusive to [end] exclusive.
-  void removeRange(int start, int end) => colors.removeRange(start, end);
-
-  /// Removes the colors in the range [start] inclusive to [end] exclusive
-  /// and inserts the colors in [replacement] in its place.
-  void replaceRange(int start, int end, ColorPalette replacement) =>
-      colors.replaceRange(start, end, replacement.colors);
-
-  /// Adds all of the colors contained in [colorPalette] to the
-  /// end of this palette's [colors] list.
-  ///
-  /// If [insertAt] is provided, the colors from [colorPalette] will be
-  /// inserted into this palette at the position of [insertAt].
-  ///
-  /// [insertAt], if not `null`, must be `>= 0 && <= length`.
-  void combine(ColorPalette colorPalette, [int? insertAt]) {
-    assert(insertAt == null || (insertAt >= 0 && insertAt <= length));
-
-    if (insertAt == null) {
-      colors.addAll(colorPalette.colors);
-    } else {
-      colors.insertAll(insertAt, colorPalette.colors);
-    }
-  }
-
-  /// Reverses the order of the colors in the palette.
-  void reverse() => colors.replaceRange(0, length, colors.reversed);
-
-  /// Sorts the palette by [property].
-  ///
-  /// [property] must not be `null`.
-  void sortBy(ColorSortingProperty property) {
-    if (colors.length <= 1) return;
-
-    if (property == ColorSortingProperty.similarity ||
-        property == ColorSortingProperty.difference) {
-      _sortByDifference(property);
-      return;
-    }
-
-    colors.sort((a, b) {
-      late num value1;
-      late num value2;
-      var inverse = false;
-
-      switch (property) {
-        case ColorSortingProperty.brightest:
-          value1 = a.toHspColor().perceivedBrightness;
-          value2 = b.toHspColor().perceivedBrightness;
-          inverse = true;
-          break;
-        case ColorSortingProperty.dimmest:
-          value1 = a.toHspColor().perceivedBrightness;
-          value2 = b.toHspColor().perceivedBrightness;
-          break;
-        case ColorSortingProperty.lightest:
-          value1 = a.toHslColor().lightness;
-          value2 = b.toHslColor().lightness;
-          inverse = true;
-          break;
-        case ColorSortingProperty.darkest:
-          value1 = a.toHslColor().lightness;
-          value2 = b.toHslColor().lightness;
-          break;
-        case ColorSortingProperty.mostIntense:
-          value1 = a.toHsiColor().intensity;
-          value2 = b.toHsiColor().intensity;
-          inverse = true;
-          break;
-        case ColorSortingProperty.leastIntense:
-          value1 = a.toHsiColor().intensity;
-          value2 = b.toHsiColor().intensity;
-          break;
-        case ColorSortingProperty.deepest:
-          value1 = a.saturation;
-          value2 = b.saturation;
-          inverse = true;
-          break;
-        case ColorSortingProperty.dullest:
-          value1 = a.saturation;
-          value2 = b.saturation;
-          break;
-        case ColorSortingProperty.richest:
-          var color1 = a.toHsbColor();
-          var color2 = b.toHsbColor();
-          value1 = color1.saturation + color1.brightness;
-          value2 = color2.saturation + color2.brightness;
-          inverse = true;
-          break;
-        case ColorSortingProperty.muted:
-          var color1 = a.toHsbColor();
-          var color2 = b.toHsbColor();
-          value1 = color1.saturation + color1.brightness;
-          value2 = color2.saturation + color2.brightness;
-          break;
-        case ColorSortingProperty.red:
-          value1 = a.hue.calculateDistance(0);
-          value2 = b.hue.calculateDistance(0);
-          break;
-        case ColorSortingProperty.redOrange:
-          value1 = a.hue.calculateDistance(30);
-          value2 = b.hue.calculateDistance(30);
-          break;
-        case ColorSortingProperty.orange:
-          value1 = a.hue.calculateDistance(60);
-          value2 = b.hue.calculateDistance(60);
-          break;
-        case ColorSortingProperty.yellowOrange:
-          value1 = a.hue.calculateDistance(90);
-          value2 = b.hue.calculateDistance(90);
-          break;
-        case ColorSortingProperty.yellow:
-          value1 = a.hue.calculateDistance(120);
-          value2 = b.hue.calculateDistance(120);
-          break;
-        case ColorSortingProperty.yellowGreen:
-          value1 = a.hue.calculateDistance(150);
-          value2 = b.hue.calculateDistance(150);
-          break;
-        case ColorSortingProperty.green:
-          value1 = a.hue.calculateDistance(180);
-          value2 = b.hue.calculateDistance(180);
-          break;
-        case ColorSortingProperty.cyan:
-          value1 = a.hue.calculateDistance(210);
-          value2 = b.hue.calculateDistance(210);
-          break;
-        case ColorSortingProperty.blue:
-          value1 = a.hue.calculateDistance(240);
-          value2 = b.hue.calculateDistance(240);
-          break;
-        case ColorSortingProperty.blueViolet:
-          value1 = a.hue.calculateDistance(270);
-          value2 = b.hue.calculateDistance(270);
-          break;
-        case ColorSortingProperty.violet:
-          value1 = a.hue.calculateDistance(300);
-          value2 = b.hue.calculateDistance(300);
-          break;
-        case ColorSortingProperty.magenta:
-          value1 = a.hue.calculateDistance(330);
-          value2 = b.hue.calculateDistance(330);
-          break;
-        default:
-          break;
-      }
-
-      return inverse ? value2.compareTo(value1) : value1.compareTo(value2);
-    });
-  }
-
-  /// Sorts the colors in the palette by their similarity to one another.
-  void _sortByDifference(ColorSortingProperty order) {
-    assert(order == ColorSortingProperty.similarity ||
-        order == ColorSortingProperty.difference);
-
-    // Compare every color to every other color and calculate the difference
-    // between them.
-    final differences = <int, List<double?>>{};
-
-    for (var i = 0; i < length; i++) {
-      differences.addAll({
-        i: List<double?>.generate(
-          length,
-          (index) =>
-              i == index ? null : colors[i].calculateDifference(colors[index]),
-        ),
-      });
-    }
-
-    // Determine the starting color by finding the color that's both the
-    // most and least different to the other colors in the palette.
-    var startingColor = 0;
-    var lowestDifference = differences[0]!.lowest;
-    var highestDifference = differences[0]!.highest;
-
-    for (var i = 1; i < length; i++) {
-      final leastDifferent = differences[i]!.lowest;
-      final mostDifferent = differences[i]!.highest;
-
-      if ((order == ColorSortingProperty.similarity &&
-              (leastDifferent! < lowestDifference! ||
-                  (leastDifferent == lowestDifference &&
-                      mostDifferent! > highestDifference!))) ||
-          (order == ColorSortingProperty.difference &&
-              (mostDifferent! > highestDifference! ||
-                  (mostDifferent == highestDifference &&
-                      leastDifferent! < lowestDifference!)))) {
-        startingColor = i;
-        lowestDifference = leastDifferent;
-        highestDifference = mostDifferent;
-      }
-    }
-
-    // Sort the colors in the order of their similiarity
-    final newPalette = <ColorModel>[colors[startingColor]];
-    final oldPalette = List<ColorModel>.from(colors)..removeAt(startingColor);
-
-    while (oldPalette.isNotEmpty) {
-      final color = order == ColorSortingProperty.similarity
-          ? oldPalette.closest(newPalette.last)
-          : oldPalette.furthest(newPalette.last);
-
-      newPalette.add(color);
-      oldPalette.remove(color);
-    }
-
-    colors.setAll(0, newPalette);
-  }
-
-  /// Sorts the palette by each colors hue.
-  ///
-  /// [startingFrom] sets where on the color wheel the colors will start
-  /// sorting from. [startingFrom] must be `>= 0 && <= 360` and must not
-  /// be `null`.
-  ///
-  /// If [clockwise] is `true`, the colors will be sorted in ascending order
-  /// around the color wheel. If `false`, they will be sorted in descending
-  /// order. [clockwise] must not be `null`.
-  void sortByHue({
-    num startingFrom = 0,
-    bool clockwise = true,
-  }) {
-    assert(startingFrom >= 0 && startingFrom <= 360);
-
-    colors.sort((a, b) {
-      var hue1 = a.hue;
-      var hue2 = b.hue;
-
-      if (clockwise) {
-        if (hue1 < startingFrom) hue1 += 360;
-        if (hue2 < startingFrom) hue2 += 360;
-
-        return hue2.compareTo(hue1);
-      }
-
-      if (hue1 < startingFrom) hue1 -= 360;
-      if (hue2 < startingFrom) hue2 -= 360;
-
-      return hue1.compareTo(hue2);
-    });
   }
 
   /// Generates a new color in the color space defined by [colorModel].
@@ -1059,28 +1220,89 @@ class ColorPalette {
     return (Random().nextDouble() * value) - (value / 2);
   }
 
-  /// The number of [colors] in the palette.
-  int get length => colors.length;
+  @override
+  bool contains(Object? color) => colors.contains(color);
 
-  /// Returns the color at the position of [index].
-  ColorModel operator [](int index) => colors[index];
+  @override
+  Iterable<ColorModel> followedBy(Iterable<ColorModel> other) =>
+      colors.followedBy(other);
 
-  /// Sets the color at the position of [index] to [value].
-  void operator []=(int index, ColorModel value) => colors[index] = value;
-
-  /// Returns the concatenation of this palette's colors and [other]s'.
-  ///
-  /// [other] may be a [ColorPalette] or a [List<ColorModel>].
-  ColorPalette operator +(dynamic other) {
-    assert(other is ColorPalette || other is List<ColorModel>);
-    late List<ColorModel> colors;
-    if (other is ColorPalette) {
-      colors = other.colors;
-    } else {
-      colors = other as List<ColorModel>;
-    }
-    return ColorPalette(this.colors + colors);
+  @override
+  int indexOf(ColorModel color, [int start = 0]) {
+    assert(start >= 0 && start < length);
+    return colors.indexOf(color, start);
   }
+
+  @override
+  void operator []=(int index, ColorModel color) {
+    colors[index] = color;
+  }
+
+  @override
+  set first(ColorModel color) {
+    colors.first = color;
+  }
+
+  @override
+  set last(ColorModel color) {
+    colors.last = color;
+  }
+
+  @override
+  void add(ColorModel color) {
+    colors.add(color);
+  }
+
+  @override
+  void addAll(Iterable<ColorModel> colors) {
+    this.colors.addAll(colors);
+  }
+
+  @override
+  void insert(int index, ColorModel color) {
+    assert(index >= 0 && index < length);
+    colors.insert(index, color);
+  }
+
+  @override
+  void insertAll(int index, Iterable<ColorModel> colors) {
+    assert(index >= 0 && index < length);
+    this.colors.setAll(index, colors);
+  }
+
+  @override
+  void setAll(int index, Iterable<ColorModel> colors) {
+    assert(index >= 0 && index < length);
+    this.colors.setAll(index, colors);
+  }
+
+  @override
+  void setRange(int start, int end, Iterable<ColorModel> colors,
+      [int skipCount = 0]) {
+    assert(start >= 0 && start <= end);
+    assert(end >= start && end < length);
+    assert(skipCount >= 0);
+    assert(end - start + skipCount <= length);
+    this.colors.setRange(start, end, colors, skipCount);
+  }
+
+  @override
+  void fillRange(int start, int end, [ColorModel? fillColor]) {
+    assert(start >= 0 && start <= end);
+    assert(end >= start && end < length);
+    colors.fillRange(start, end, fillColor);
+  }
+
+  @override
+  void replaceRange(int start, int end, Iterable<ColorModel> replacement) {
+    assert(start >= 0 && start <= end);
+    assert(end >= start && end < length);
+    colors.replaceRange(start, end, replacement);
+  }
+
+  @override
+  ColorPalette operator +(Iterable<ColorModel> other) =>
+      ColorPalette(colors + other.toList());
 
   @override
   String toString() => colors.toString();
@@ -1104,7 +1326,7 @@ extension _CalculateDifference on ColorModel {
   }
 }
 
-extension _ClosestFurthest on List<ColorModel> {
+extension _ClosestFurthestColor on List<ColorModel> {
   /// Returns the color in the list closest to [color].
   ColorModel closest(ColorModel color) {
     late ColorModel closestColor;
